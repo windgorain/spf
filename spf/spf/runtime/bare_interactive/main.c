@@ -102,7 +102,7 @@ static int _run(int argc, char **argv)
         {NULL}
     };
 
-    return SUBCMD_DoParams(subcmds, argc, argv);
+    return SUBCMD_DoParams(subcmds, argc, argv, NULL);
 }
 
 int main(void)

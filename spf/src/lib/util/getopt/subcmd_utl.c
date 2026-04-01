@@ -128,7 +128,7 @@ static void subcmd_help(SUBCMD_MATCHED_S *matched)
 }
 
 
-int SUBCMD_DoExt(SUB_CMD_NODE_S *subcmd, int argc, char **argv, int flag)
+int SUBCMD_DoExt(SUB_CMD_NODE_S *subcmd, int argc, char **argv, int flag, void *ud)
 {
     PF_SUBCMD_FUNC func;
     int tok_num;
@@ -155,18 +155,18 @@ int SUBCMD_DoExt(SUB_CMD_NODE_S *subcmd, int argc, char **argv, int flag)
 
     func = matched.matched[0]->func;
 
-    return func((argc + 1) - tok_num, argv + (tok_num - 1));
+    return func((argc + 1) - tok_num, argv + (tok_num - 1), ud);
 }
 
 
-int SUBCMD_Do(SUB_CMD_NODE_S *subcmd, int argc, char **argv)
+int SUBCMD_Do(SUB_CMD_NODE_S *subcmd, int argc, char **argv, void *ud)
 {
-    return SUBCMD_DoExt(subcmd, argc - 1, argv + 1, 0);
+    return SUBCMD_DoExt(subcmd, argc - 1, argv + 1, 0, ud);
 }
 
 
-int SUBCMD_DoParams(SUB_CMD_NODE_S *subcmd, int argc, char **argv)
+int SUBCMD_DoParams(SUB_CMD_NODE_S *subcmd, int argc, char **argv, void *ud)
 {
-    return SUBCMD_DoExt(subcmd, argc, argv, 0);
+    return SUBCMD_DoExt(subcmd, argc, argv, 0, ud);
 }
 

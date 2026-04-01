@@ -18,13 +18,11 @@ static inline USHORT IN_Cksum(IN MBUF_S *pstMBuf, IN UINT uiLen )
     UINT uiDataLen;
     USHORT usCkSum = 0;
 
-    MBUF_SCAN_DATABLOCK_BEGIN(pstMBuf, pucData, uiDataLen)
-    {
+    MBUF_SCAN_DATABLOCK_BEGIN(pstMBuf, pucData, uiDataLen) {
         uiCrcLen = MIN(uiTotleLen, uiDataLen);
         usCkSum = IN_CHKSUM_AddRaw(usCkSum, pucData, uiCrcLen);
         uiTotleLen -= uiCrcLen;
-        if (uiTotleLen == 0)
-        {
+        if (uiTotleLen == 0) {
             break;
         }
     }MBUF_SCAN_END();

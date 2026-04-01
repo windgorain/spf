@@ -16,8 +16,7 @@
 
 #pragma pack(1)
 
-typedef struct
-{
+typedef struct {
     USHORT usType;      
     UINT  uiSize;      
     USHORT usReserved1;
@@ -25,8 +24,7 @@ typedef struct
     UINT  uiOffBits;   
 }VLDBMP_HEADER_S;
 
-typedef struct
-{
+typedef struct {
     UINT  uiSize;         
     UINT  uiWidth;        
     UINT  uiHeight;       
@@ -40,15 +38,13 @@ typedef struct
     UINT uiClrImportant;
 }VLDBMP_INFO_S;
 
-typedef struct
-{
+typedef struct {
     UCHAR ucBule;
     UCHAR ucGreen;
     UCHAR ucRed;
  }VLDBMP_DATA_S;
 
-typedef struct
-{
+typedef struct {
     VLDBMP_HEADER_S stBmpHead;
     VLDBMP_INFO_S   stInfo;
     VLDBMP_DATA_S   pstData[0];
@@ -61,8 +57,7 @@ typedef struct
 #define VLDBMP_FLAG_RAND_COLOR  0x4 
 
 
-typedef struct
-{
+typedef struct {
     UINT uiLineRadii; 
     UINT uiFlag;
     UCHAR ucXCompressMin; 

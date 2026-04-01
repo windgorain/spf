@@ -5,10 +5,16 @@
 ================================================================*/
 #ifndef _IP4_UTL_H
 #define _IP4_UTL_H
+
+#include "utl/endian_utl.h"
+#include "utl/net.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#define IP_MAXTTL       255     
 
 #ifndef IN_CLASSA
     #define IN_CLASSA(a)        ((((UINT)(a)) & 0x80000000) == 0)
@@ -103,9 +109,11 @@ typedef struct {
 #if BS_BIG_ENDIAN
     UCHAR    ucVer:4;              
     UCHAR    ucHLen:4;             
-#else
+#elif BS_LITTLE_ENDIAN
     UCHAR    ucHLen:4;
     UCHAR    ucVer:4;
+#else
+    #error "Error"
 #endif
 	UCHAR 		ucTos; 
 	USHORT 		usTotlelen; 

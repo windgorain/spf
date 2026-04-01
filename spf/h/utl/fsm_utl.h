@@ -64,8 +64,7 @@ typedef BS_STATUS (*PF_FSM_EVENT_FUNC)(IN FSM_S *pstFsm, IN UINT uiEvent);
 typedef VOID (*PF_FSM_STATE_LISTEN)(IN FSM_S *pstFsm, IN UINT uiOldState, IN UINT uiNewState, IN USER_HANDLE_S *pstUserHandle);
 
 
-typedef struct
-{
+typedef struct {
     CHAR *pcState;  
     CHAR *pcEvent;  
     CHAR *pcNextState;  

@@ -99,9 +99,11 @@ int FILE_MemTo(IN CHAR *pszFilePath, OUT void *buf, int buf_size)
     filesize = FILE_GetFpSize(fp);
     read_len = MIN(buf_size, filesize);
 
-    if (read_len != fread(buf, 1, read_len, fp)) {
-        fclose(fp);
-        RETURN(BS_ERR);
+    if (read_len > 0) {
+        if (read_len != fread(buf, 1, read_len, fp)) {
+            fclose(fp);
+            RETURN(BS_ERR);
+        }
     }
 
     fclose(fp);

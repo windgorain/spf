@@ -48,13 +48,7 @@ typedef struct
     UINT      ulMemSize;   
 }XMLC_HEAD_S;
 
-HANDLE XMLC_Open
-(
-    IN CHAR * pucFileName,
-    IN BOOL_T bIsCreateIfNotExist,
-    IN BOOL_T bSort,
-    IN BOOL_T bReadOnly
-);
+HANDLE XMLC_Open(char * pucFileName, BOOL_T bSort, BOOL_T bReadOnly);
 BS_STATUS XMLC_Save(IN HANDLE hXmlcHandle);
 BS_STATUS XMLC_SaveTo(IN HANDLE hXmlcHandle, IN CHAR *pcFileName);
 HSTRING XMLC_ToString(IN HANDLE hXmlcHandle);
@@ -133,13 +127,7 @@ CHAR * XMLC_GetKeyValueInMark(IN MKV_MARK_S *pstMark, IN CHAR *pcKey);
 typedef int (*PF_SXMLC_SEC_WALK_FUNC)(HANDLE hIniHandle, CHAR *pszSecName, HANDLE hUsrHandle);
 typedef int (*PF_SXMLC_KEY_WALK_FUNC)(HANDLE hIniHandle, CHAR *pszSecName, CHAR *pszKeyName, HANDLE hUsrHandle);
 
-extern HANDLE SXMLC_Open
-(
-    IN CHAR * pucFileName,
-    IN BOOL_T bIsCreateIfNotExist,
-    IN BOOL_T bSort,
-    IN BOOL_T bReadOnly
-);
+extern HANDLE SXMLC_Open(char * pucFileName, BOOL_T bSort, BOOL_T bReadOnly);
 extern VOID SXMLC_Close(IN HANDLE hIniHandle);
 extern BS_STATUS SXMLC_Save(IN HANDLE hIniHandle);
 extern BS_STATUS SXMLC_GetKeyValueAsString(IN HANDLE hIniHandle, IN CHAR *pucMarkName, IN CHAR *pucKeyName, OUT CHAR **ppucKeyValue);

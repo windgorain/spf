@@ -6,6 +6,7 @@
 #ifndef _IP_MBUF_H
 #define _IP_MBUF_H
 #include "utl/mbuf_utl.h"
+#include "utl/ip_utl.h"
 #ifdef __cplusplus
 extern "C"
 {

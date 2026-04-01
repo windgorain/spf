@@ -29,7 +29,9 @@ typedef struct {
 
     UINT translate_mode_aot: 1; 
     UINT param_6th: 1; 
-    UINT raw_bare: 1; 
+                       
+                       
+    UINT raw_bare: 1;  
 
     U32 app_ver;
 }MYBPF_SIMPLE_CONVERT_PARAM_S;
@@ -59,7 +61,6 @@ U64 MYBPF_SPF_GetProgsSize(LLDATA_S *d);
 void * MYBPF_SPF_GetProgs(LLDATA_S *d);
 int MYBPF_SPF_GetJitArch(FILE_MEM_S *m);
 int MYBPF_SPF_GetMaps(FILE_MEM_S *m, OUT MYBPF_MAPS_SEC_S *map_sec);
-char * MYBPF_SPF_GetMapNameByID(FILE_MEM_S *m, U32 map_id);
 int MYBPF_SPF_GetMapIDByName(FILE_MEM_S *m, char *map_name);
 int MYBPF_SPF_ModifyMap(FILE_MEM_S *m, int map_id, UMAP_ELF_MAP_S *mapdef, MYBPF_SIMPLE_MAP_MASK_S *msk);
 int MYBPF_SPF_ReplaceArchPattern(char *src_filename, OUT char *dst_filename, int size);

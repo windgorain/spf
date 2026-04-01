@@ -26,6 +26,9 @@ typedef struct {
 
 int NumList_ParseElement(LSTR_S *lstr, OUT UINT *min, OUT UINT *max);
 
+
+int NumList_ParseHexPrefix(LSTR_S *lstr, OUT U64 *number, OUT U8 *prefix);
+
 VOID NumList_Init(IN NUM_LIST_S *pstList);
 VOID NumList_Finit(IN NUM_LIST_S *pstList);
 BS_STATUS NumList_AddRange(IN NUM_LIST_S *pstList, INT64 iBegin, INT64 iEnd);

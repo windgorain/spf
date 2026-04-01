@@ -55,14 +55,12 @@ typedef int (*PF_CMD_EXP_RUN)(UINT, CHAR**, VOID*);
 typedef int (*PF_CMD_EXP_SAVE)(IN HANDLE hFileHandle);
 typedef int (*PF_CMD_EXP_ENTER)(void *env);
 
-typedef struct
-{
+typedef struct {
     DLL_NODE_S stLinkNode;
     VOID_FUNC pfNoDbgFunc;
 }CMD_EXP_NO_DBG_NODE_S;
 
-typedef struct
-{
+typedef struct {
     UINT uiType;  
     UINT uiProperty;
     UCHAR level;  
@@ -76,8 +74,9 @@ typedef struct
 
 CMD_EXP_HDL CmdExp_Create();
 
-#define CMD_EXP_FLAG_LOCK 0x1 
-void CmdExp_SetFlag(CMD_EXP_HDL hCmdExp, UINT flag);
+void CmdExp_SetLockEnable(CMD_EXP_HDL hCmdExp, BOOL_T enable);
+void CmdExp_SetAutoSave(CMD_EXP_HDL hCmdExp, BOOL_T enable);
+BOOL_T CmdExp_IsAutoSave(CMD_EXP_HDL hCmdExp);
 
 int CmdExp_RegCmd(CMD_EXP_HDL hCmdExp, CMD_EXP_REG_CMD_PARAM_S *pstParam);
 int CmdExp_UnregCmd(CMD_EXP_HDL hCmdExp, CMD_EXP_REG_CMD_PARAM_S *pstParam);

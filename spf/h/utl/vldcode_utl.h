@@ -14,8 +14,7 @@
     extern "C" {
 #endif 
 
-typedef enum
-{
+typedef enum {
     VLDCODE_VALID = 0,
     VLDCODE_INVALID,
     VLDCODE_TIMEOUT,

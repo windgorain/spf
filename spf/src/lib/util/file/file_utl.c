@@ -12,8 +12,6 @@
 #include "utl/file_utl.h"
 #include "utl/txt_utl.h"
 #include "utl/cjson.h"
-#include "utl/passwd_utl.h"
-#include <stdbool.h>
 
 
 #ifdef IN_WINDOWS
@@ -182,10 +180,12 @@ UINT FILE_GetPathDeep(IN CHAR *pcFilePath, IN UINT uiPathLen)
 
 BOOL_T FILE_IsFileExist(IN CHAR *pcFilePath)
 {
+    if (FILE_IsDir(pcFilePath)) {
+        return FALSE;
+    }
 
     
-    if (0 == access(pcFilePath, 0))
-    {
+    if (0 == access(pcFilePath, 0)) {
         return TRUE;
     }
 
@@ -576,17 +576,16 @@ BS_STATUS FILE_DelDir(IN CHAR *pszPath)
 }
 
 
+
 FILE * FILE_Open(IN CHAR *pszFilePath, IN BOOL_T bIsCreateDirIfNotExist, IN CHAR *pszOpenMode)
 {
     CHAR szPath[FILE_MAX_PATH_LEN + 1];
 
-    if (strlen(pszFilePath) > FILE_MAX_PATH_LEN)
-    {
+    if (strlen(pszFilePath) > FILE_MAX_PATH_LEN) {
         return NULL;
     }
 
-    if (bIsCreateDirIfNotExist == TRUE)
-    {
+    if (bIsCreateDirIfNotExist == TRUE) {
         FILE_MakeDirs (pszFilePath);
     }
 
@@ -706,7 +705,7 @@ BS_STATUS FILE_MoveTo(IN CHAR *pszSrcFileName, IN CHAR *pszDstFileName, IN BOOL_
     return BS_OK;
 }
 
-VOID FILE_WriteStr(IN FILE *fp, IN CHAR *pszString)
+void FILE_WriteStr(IN FILE *fp, IN CHAR *pszString)
 {
     fwrite(pszString, 1, strlen(pszString), fp);
 }
@@ -852,7 +851,7 @@ int FILE_ReadLine(FILE *fp, char *line, int size, char end_char)
     }while(c != end_char);
 
     if (count < size) {
-        line[count] = 0;
+        line[count] = '\0';
     }
 
     return count;

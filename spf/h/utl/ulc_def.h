@@ -22,14 +22,6 @@ enum bpf_map_type {
     BPF_MAP_TYPE_MAX
 };
 
-enum xdp_action {
-	XDP_ABORTED = 0,
-	XDP_DROP,
-	XDP_PASS,
-	XDP_TX,
-	XDP_REDIRECT,
-};
-
 struct xdp_md {
 	unsigned int data;
 	unsigned int data_end;

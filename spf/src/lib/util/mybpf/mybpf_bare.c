@@ -103,7 +103,7 @@ static int _mybpf_bare_load(void *data, int len, const void **tmp_helpers, OUT M
     int prog_size = ntohl(shdr->sub_size) - shdr_len;
 
     void *fn = mmap(0, prog_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (fn == MAP_FAILED) {
+    if ((fn == MAP_FAILED) || (! fn)) {
         _mybpf_bare_free_bss(bss);
         RETURN(BS_ERR);
     }
@@ -111,6 +111,7 @@ static int _mybpf_bare_load(void *data, int len, const void **tmp_helpers, OUT M
     memcpy(fn, prog_begin, prog_size);
     mprotect(fn, prog_size, PROT_READ | PROT_EXEC);
 
+    
     bare->prog = fn;
     bare->prog_len = prog_size;
     bare->ctx.base_helpers = ulc_get_base_helpers();
@@ -143,6 +144,7 @@ void MYBPF_UnloadBare(MYBPF_BARE_S *bare)
         memset(bare, 0, sizeof(*bare));
     }
 }
+
 
 U64 MYBPF_RunBareMain(MYBPF_BARE_S *bare, MYBPF_PARAM_S *p)
 {

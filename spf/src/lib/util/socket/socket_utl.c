@@ -73,27 +73,37 @@ int Socket_Read(IN INT iSocketId, OUT void *buf, IN UINT uiBufLen, IN UINT uiFla
 }
 
 
-int Socket_Read2(int iSocketId, OUT void *buf, UINT uiLen, OUT UINT *puiReadLen, UINT ulFlag)
+int Socket_Recv2(int iSocketId, OUT void *buf, UINT uiLen, UINT ulFlag)
 {
-    INT iLen;
-    BS_STATUS eRet = BS_ERR;
-
-	*puiReadLen = 0;
-
-    iLen = Socket_Read(iSocketId, buf, uiLen, ulFlag);
-
-	if (iLen > 0) {
-        eRet = BS_OK;
-		*puiReadLen = iLen;
-	} else {
-        if (iLen == 0) {
-            eRet = BS_PEER_CLOSED;
-        } else if (iLen == SOCKET_E_AGAIN) {
-            eRet = BS_OK;
-        }
+    int len = Socket_Read(iSocketId, buf, uiLen, ulFlag);
+    if (len > 0) {
+        return len;
     }
 
-    return eRet;
+    if (len == SOCKET_E_AGAIN) {
+        return 0;
+    }
+
+    if (len == 0) {
+        return BS_PEER_CLOSED;
+    }
+
+    return len;
+}
+
+
+int Socket_Read2(int iSocketId, OUT void *buf, UINT uiLen, OUT UINT *puiReadLen, UINT ulFlag)
+{
+	*puiReadLen = 0;
+
+    int len = Socket_Recv2(iSocketId, buf, uiLen, ulFlag);
+    if (len < 0) {
+        return len;
+    }
+
+	*puiReadLen = len;
+
+    return 0;
 }
 
 
@@ -214,21 +224,6 @@ int Socket_Connect2(int fd, UINT ulIp, USHORT usPort)
     return ret;
 }
 
-int Socket_UDPClient(UINT ip, USHORT port)
-{
-    int fd;
-
-    if ((fd = Socket_Create(AF_INET, SOCK_DGRAM)) < 0 ) {
-        return -1;
-    }
-
-    if (Socket_Connect(fd, ip, port) < 0) {
-        Socket_Close(fd);
-    }
-
-    return fd;
-}
-
 BOOL_T Socket_N_IsIPv4(IN CHAR *pcName, IN UINT uiLen)
 {
     CHAR szTmp[INET_ADDRSTRLEN + 1];
@@ -246,8 +241,7 @@ BOOL_T Socket_N_IsIPv4(IN CHAR *pcName, IN UINT uiLen)
 
 UINT Socket_Ipsz2IpNetWitchCheck(IN CHAR *pcIP)
 {
-    if (FALSE == Socket_IsIPv4(pcIP))
-    {
+    if (FALSE == Socket_IsIPv4(pcIP)) {
         return 0;
     }
 
@@ -314,10 +308,9 @@ CHAR * Socket_Ip2Name(IN UINT ip, OUT char *buf, IN int buf_size)
 #endif
 }
 
-BS_STATUS Socket_SetSockOpt(IN INT iSocketId, IN INT iLevel, IN INT iOpt, IN VOID *pOpt, IN UINT uiOptLen)
+int Socket_SetSockOpt(int sock, int level, int opt, void *data, int opt_len)
 {
-    if (setsockopt(iSocketId, iLevel, iOpt, pOpt, uiOptLen) < 0)
-    {
+    if (setsockopt(sock, level, opt, data, opt_len) < 0) {
         return BS_ERR;
     }
 
@@ -342,8 +335,16 @@ BS_STATUS Socket_Ioctl(INT iSocketId, INT lCmd, void *argp)
     return BS_OK;
 }
 
+#ifndef IN_WINDOWS
 
-BS_STATUS Socket_GetLocalIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
+int Socket_EnablePktInfo(int fd, int on)
+{
+    return setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on));
+}
+#endif
+
+
+int Socket_GetLocalIpPortNet(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
 {
     socklen_t iAddrLen;
     struct sockaddr_storage stSockAddr;
@@ -356,18 +357,44 @@ BS_STATUS Socket_GetLocalIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *p
 
     pstSin = (struct sockaddr_in*)&stSockAddr;
 
-    *pusPort = ntohs(pstSin->sin_port);
+    if (pusPort) {
+        *pusPort = pstSin->sin_port;
+    }
+
+    if (pulIp) {
 #ifdef IN_WINDOWS
-    *pulIp = ntohl(pstSin->sin_addr.S_un.S_addr);
+        *pulIp = pstSin->sin_addr.S_un.S_addr;
 #endif
+
 #ifdef IN_UNIXLIKE
-    *pulIp = ntohl(pstSin->sin_addr.s_addr);
+        *pulIp = pstSin->sin_addr.s_addr;
 #endif
+    }
+
     return BS_OK;
 }
 
 
-BS_STATUS Socket_GetPeerIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
+int Socket_GetLocalIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
+{
+    U32 ip;
+    U16 port;
+
+    Socket_GetLocalIpPortNet(iSocketId, &ip, &port);
+
+    if (pulIp) {
+        *pulIp = ntohl(ip);
+    }
+
+    if (pusPort) {
+        *pusPort = ntohs(port);
+    }
+
+    return 0;
+}
+
+
+int Socket_GetPeerIpPortNet(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
 {
     socklen_t iAddrLen;
     struct sockaddr_storage stSockAddr;
@@ -375,18 +402,42 @@ BS_STATUS Socket_GetPeerIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pu
 
     Mem_Zero(&stSockAddr, sizeof(stSockAddr));
     iAddrLen = sizeof(stSockAddr);
-    
+
     getpeername(iSocketId, (struct sockaddr *)&stSockAddr, &iAddrLen);
 
     pstSin = (struct sockaddr_in*)&stSockAddr;
 
-    *pusPort = ntohs(pstSin->sin_port);
+    if (pusPort) {
+        *pusPort = pstSin->sin_port;
+    }
+
+    if (pulIp) {
 #ifdef IN_WINDOWS
-    *pulIp = ntohl(pstSin->sin_addr.S_un.S_addr);
+        *pulIp = pstSin->sin_addr.S_un.S_addr;
 #endif
 #ifdef IN_UNIXLIKE
-    *pulIp = ntohl(pstSin->sin_addr.s_addr);
+        *pulIp = pstSin->sin_addr.s_addr;
 #endif
+    }
+
+    return BS_OK;
+}
+
+
+int Socket_GetPeerIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort)
+{
+    U32 ip;
+    U16 port;
+
+    Socket_GetPeerIpPortNet(iSocketId, &ip, &port);
+
+    if (pulIp) {
+        *pulIp = ntohl(ip);
+    }
+
+    if (pusPort) {
+        *pusPort = ntohs(port);
+    }
 
     return BS_OK;
 }
@@ -396,8 +447,7 @@ USHORT Socket_GetHostPort(IN INT iSocketId)
 {
     UINT uiIp;
     USHORT usPort;
-    if (BS_OK != Socket_GetLocalIpPort(iSocketId, &uiIp, &usPort))
-    {
+    if (BS_OK != Socket_GetLocalIpPort(iSocketId, &uiIp, &usPort)) {
         return 0;
     }
 
@@ -470,14 +520,14 @@ BS_STATUS Socket_Close(IN INT iSocketId)
     return BS_OK;
 }
 
-int _Socket_Create(int iFamily, UINT ulType, const char *filename, int line)
+int _Socket_Create(int family, int type, int protocol, const char *filename, int line)
 {
     INT s;
 
     socket_WindowInit();
 
     
-    s = socket (iFamily, (INT)ulType, 0);
+    s = socket(family, type, protocol);
 
     if (s < 0) {
         return s;
@@ -537,12 +587,11 @@ BS_STATUS Socket_SendTo
     return BS_OK;
 }
 
-BS_STATUS Socket_RecvFrom
+int Socket_RecvFrom
 (
     IN INT iSocketId,
     OUT VOID *pBuf,
     IN UINT ulBufLen,
-    OUT UINT *pulRecvLen,
     OUT UINT *pulFromIp,
     OUT USHORT *pusFromPort
 )
@@ -551,14 +600,12 @@ BS_STATUS Socket_RecvFrom
     socklen_t  ulAddrLen = 0;
     INT lSize;
 
-    *pulRecvLen = 0;
-
     Mem_Zero(&stSockAddr,sizeof(sizeof(stSockAddr)));
     ulAddrLen = sizeof(stSockAddr);
 
     lSize = recvfrom(iSocketId, pBuf, ulBufLen, 0, (struct sockaddr*)&stSockAddr, &ulAddrLen);
-    if (lSize < 0) {
-        RETURN(BS_ERR);
+    if (lSize <= 0) {
+        return lSize;
     }
 
     if (pulFromIp) {
@@ -569,15 +616,59 @@ BS_STATUS Socket_RecvFrom
         *pusFromPort = stSockAddr.sin_port;
     }
 
-    *pulRecvLen = lSize;
-
-    return BS_OK;
+    return lSize;
 }
+
+#ifndef IN_WINDOWS
+
+
+int Socket_RecvFromExt(int fd, OUT void *buf, int buf_size, OUT U32 *sip, OUT U16 *sport, OUT U32 *dip)
+{
+    struct sockaddr_in client_addr;
+    char control[256];
+    struct iovec iov[1];
+    struct msghdr msg = {0};
+
+    iov[0].iov_base = buf;
+    iov[0].iov_len = buf_size;
+
+    msg.msg_name = &client_addr;
+    msg.msg_namelen = sizeof(client_addr);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = control;
+    msg.msg_controllen = sizeof(control);
+
+    
+    ssize_t n = recvmsg(fd, &msg, 0);
+    if (n < 0) {
+        return -1;
+    }
+
+    
+    *sip = client_addr.sin_addr.s_addr; 
+    *sport = client_addr.sin_port; 
+
+    
+    struct in_pktinfo *pktinfo = NULL;
+    struct cmsghdr *cmsg;
+
+    for (cmsg = CMSG_FIRSTHDR(&msg); cmsg != NULL; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+            pktinfo = (struct in_pktinfo *)CMSG_DATA(cmsg);
+            *dip = pktinfo->ipi_addr.s_addr; 
+            break;
+        }
+    }
+
+    return n;
+}
+#endif
 
 BS_STATUS _Socket_Pair(UINT uiType, OUT INT aiFd[2], const char *filename, int line)
 {
 #ifndef IN_WINDOWS
-	int fd[2];
+    int fd[2];
 
     if (socketpair(AF_UNIX, uiType, 0, fd) < 0)
     {
@@ -597,12 +688,12 @@ BS_STATUS _Socket_Pair(UINT uiType, OUT INT aiFd[2], const char *filename, int l
     UINT uiIp;
     USHORT usPort;
 
-    if ((iListenFd = _Socket_Create(AF_INET, uiType, filename, line)) < 0)
+    if ((iListenFd = _Socket_Create(AF_INET, uiType, 0, filename, line)) < 0)
     {
         RETURN(BS_ERR);
     }
 
-    if ((iConnectFd = _Socket_Create(AF_INET, uiType, filename, line)) < 0)
+    if ((iConnectFd = _Socket_Create(AF_INET, uiType, 0, filename, line)) < 0)
     {
         Socket_Close(iListenFd);
         RETURN(BS_ERR);
@@ -728,7 +819,7 @@ int _Socket_OpenUdp(UINT ip, USHORT port, const char *file, int line)
 {
     int fd;
 
-    fd = _Socket_Create(AF_INET, SOCK_DGRAM, file, line);
+    fd = _Socket_Create(AF_INET, SOCK_DGRAM, 0, file, line);
     if ((ip == 0) && (port == 0)) {
         return fd;
     }
@@ -750,7 +841,7 @@ int _Socket_UdpClient(UINT ip, USHORT port, const char *file, int line)
     int fd;
     int ret;
 
-    fd = _Socket_Create(AF_INET, SOCK_DGRAM, file, line);
+    fd = _Socket_Create(AF_INET, SOCK_DGRAM, 0, file, line);
     if (fd < 0) {
         return fd;
     }
@@ -771,7 +862,7 @@ int _Socket_TcpServer(UINT ip, USHORT port, const char *file, int line)
     int fd;
     int ret;
 
-    fd = _Socket_Create(AF_INET, SOCK_STREAM, file, line);
+    fd = _Socket_Create(AF_INET, SOCK_STREAM, 0, file, line);
     if (fd < 0) {
         RETURN(BS_ERR);
     }

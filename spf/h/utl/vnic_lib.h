@@ -9,6 +9,7 @@
 #define __VNIC_LIB_H_
 
 #include "utl/net.h"
+#include "utl/eth_def.h"
 
 #ifdef __cplusplus
     extern "C" {
@@ -57,7 +58,7 @@ BS_STATUS VNIC_GetIP(IN VNIC_HANDLE hVnic, OUT UINT *puiIp, OUT UINT *puiMask);
 BS_STATUS VNIC_AddDns(IN VNIC_HANDLE hVnic, IN UINT uiDns, IN UINT uiIndex);
 BS_STATUS VNIC_SetDns(IN VNIC_HANDLE hVnic, IN UINT uiDns);
 BS_STATUS VNIC_DelDns(IN VNIC_HANDLE hVnic, IN UINT uiDns);
-BS_STATUS VNIC_GetAdapterIndex(VNIC_HANDLE hVnic, OUT ULONG *index);
+BS_STATUS VNIC_GetAdapterIndex(VNIC_HANDLE hVnic, OUT U32 *index);
 
 
 #ifdef __cplusplus

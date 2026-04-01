@@ -41,7 +41,7 @@ U64 TM_SecondsFromUTC(void);
 
 
 VOID TM_Utc2String(IN time_t ulUtcTime, OUT CHAR *szStringTime);
-
+VOID TM_Utc2GmTm(IN time_t ulUtcTime, OUT struct tm *pstTm);
 VOID TM_Utc2Tm(IN time_t ulUtcTime, OUT struct tm *pstTm);
 
 BS_STATUS TM_Tm2Utc(IN struct tm *pstTm, OUT time_t *pulUtcTime);

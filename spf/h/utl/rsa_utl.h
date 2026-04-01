@@ -24,10 +24,10 @@ EVP_PKEY * RSA_BuildKey(UINT bits);
 EVP_PKEY * DSA_BuildKey(UINT bits);
 EVP_PKEY * EC_BuildKey(UINT bits);
 
-int RSA_PublicEncrypt(IN EVP_PKEY *key, IN void *in, int in_size, OUT void *out, int out_size);
-int RSA_PrivateDecrypt(IN EVP_PKEY *key, IN void *in, int in_size, OUT void *out, int out_size);
-int RSA_PrivateEncrypt(IN EVP_PKEY *key, IN void *in, int in_size, OUT void *out, int out_size);
-int RSA_PublicDecrypt(IN EVP_PKEY *key, IN void *in, int in_size, OUT void *out, int out_size);
+int RSA_PublicEncrypt(EVP_PKEY *key, void *in, int in_size, OUT void *out, int out_size);
+int RSA_PrivateDecrypt(EVP_PKEY *key, void *in, int in_size, OUT void *out, int out_size);
+int RSA_PrivateEncrypt(EVP_PKEY *key, void *in, int in_size, OUT void *out, int out_size);
+int RSA_PublicDecrypt(EVP_PKEY *key, void *in, int in_size, OUT void *out, int out_size);
 
 #ifdef __cplusplus
 }

@@ -33,9 +33,9 @@ extern "C"
 
 typedef struct {
     IP_TUP_KEY_S key; 
-    UINT key_hash;
-    UINT client_index:1; 
-    UINT state:4;
+    U32 key_hash;
+    U32 client_index:1; 
+    U32 state:4;
     VCLOCK_NODE_S vclock_timer;
 }IP_SESSION_S;
 
@@ -53,9 +53,14 @@ typedef struct {
 
 typedef UINT (*PF_IPSESSION_OB)(void *ob, IP_SESSION_S *session, UINT event);
 
-static inline UCHAR IPSession_GetFamily(IP_SESSION_S *sess)
+static inline U8 IPSession_GetFamily(IP_SESSION_S *sess)
 {
     return sess->key.family;
+}
+
+static inline U8 IPSession_GetProtocol(IP_SESSION_S *sess)
+{
+    return sess->key.protocol;
 }
 
 static inline void * IPSession_GetClientIP(IP_SESSION_S *sess)
@@ -111,9 +116,9 @@ int IPSession_CacheEnable(IP_SESSION_CTRL_S *ctrl);
 void IPSession_RegOb(IP_SESSION_CTRL_S *ctrl, OB_S *ob);
 void IPSession_UnregOb(IP_SESSION_CTRL_S *ctrl, OB_S *ob);
 
-int IPSession_KeyInit(IP_TUP_KEY_S *key, UCHAR family, UCHAR protocol,
+int IPSession_KeyInit(IP_TUP_KEY_S *key, U8 family, U8 protocol,
         UINT *client_ip, UINT *server_ip, USHORT client_port, USHORT server_port, UINT vnet_id);
-void IPSession_SessInit(IP_SESSION_S *session, UCHAR family, UCHAR protocol,
+void IPSession_SessInit(IP_SESSION_S *session, U8 family, U8 protocol,
         UINT *client_ip, UINT *server_ip, USHORT client_port, USHORT server_port, UINT vnet_id);
 int IPSession_Add(IP_SESSION_CTRL_S *ctrl, IP_SESSION_S *session);
 int IPSession_Find(IP_SESSION_CTRL_S *ctrl, IP_TUP_KEY_S *key);

@@ -14,8 +14,10 @@
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define BS_BIG_ENDIAN 1
+#define BS_LITTLE_ENDIAN 0
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define BS_BIG_ENDIAN 0
+#define BS_LITTLE_ENDIAN 1
 #else
 #error "Error"
 #endif
@@ -48,21 +50,25 @@ static inline int HostIsLitter(void)
 }
 #endif
 
+
 static inline USHORT ENDIAN_ChangeOrder16(USHORT data)
 {
     return (data >> 8) | (data << 8);
 }
+
 
 static inline UINT ENDIAN_ChangeOrder32(UINT data)
 {
     return (data >> 24) | ((data >> 8) & 0xff00) | ((data & 0xff00) << 8) | (data << 24);
 }
 
+
 static inline UINT64 ENDIAN_ChangeOrder64(UINT64 data)
 {
     return (data >> 56) | ((data >> 40) & 0xff00) | ((data >> 24) & 0xff0000) | ((data >> 8) & 0xff000000)
         | ((data & 0xff000000) << 8) | ((data & 0xff0000) << 24) | ((data & 0xff00) << 40) | (data << 56);
 }
+
 
 static inline USHORT Host2Litter16(USHORT data)
 {
@@ -88,6 +94,7 @@ static inline UINT64 Host2Litter64(UINT64 data)
     return ENDIAN_ChangeOrder64(data);
 }
 
+
 static inline USHORT Litter2Host16(USHORT data)
 {
     return Host2Litter16(data);
@@ -102,6 +109,7 @@ static inline UINT64 Litter2Host64(UINT64 data)
 {
     return Host2Litter64(data);
 }
+
 
 static inline USHORT Host2Big16(USHORT data)
 {
@@ -126,6 +134,7 @@ static inline UINT64 Host2Big64(UINT64 data)
     }
     return data;
 }
+
 
 static inline USHORT Big2Host16(USHORT data)
 {

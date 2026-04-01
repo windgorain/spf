@@ -8,7 +8,6 @@
 #include "utl/txt_utl.h"
 #include "utl/lstr_utl.h"
 #include "utl/num_utl.h"
-#include "utl/rand_utl.h"
 #include "utl/stack_utl.h"
 #include "utl/ctype_utl.h"
 
@@ -204,19 +203,20 @@ UINT TXT_GetTokenNum(IN CHAR *pszStr, IN CHAR *pszPatterns)
     return uiCount;
 }
 
-void TXT_ReplaceSubStr(IN CHAR *pcTxtBuf, IN CHAR *pcSubStrFrom, IN CHAR *pcSubStrTo, OUT CHAR *pcTxtOutBuf, IN ULONG ulSize)
+void TXT_ReplaceSubStr(char *pcTxtBuf, char *pcSubStrFrom, char *pcSubStrTo, OUT char *pcTxtOutBuf, U32 size)
 {
     BS_DBGASSERT(NULL != pcTxtBuf);
     BS_DBGASSERT(NULL != pcSubStrFrom);
     BS_DBGASSERT(NULL != pcSubStrTo);
     BS_DBGASSERT(NULL != pcTxtOutBuf);
 
-    if (ulSize == 0) {
+    if (size == 0) {
         return;
     }
 
-    _txt_replace_substr(pcTxtBuf, pcSubStrFrom, pcSubStrTo, pcTxtOutBuf, ulSize);
+    _txt_replace_substr(pcTxtBuf, pcSubStrFrom, pcSubStrTo, pcTxtOutBuf, size);
 }
+
 
 CHAR * TXT_StrimHead(IN CHAR *pcData, IN ULONG ulDataLen, IN CHAR *pcSkipChars)
 {
@@ -322,8 +322,8 @@ BS_STATUS TXT_Atoui(IN CHAR *pszBuf, OUT UINT *puiNum)
         RETURN(BS_BAD_PTR);
     }
 
-	if (FALSE == CTYPE_IsNumString(pszBuf)) {
-		RETURN(BS_ERR);
+	if (FALSE == CTYPE_IsNumString(pszBuf, strlen(pszBuf))) {
+        return BS_NOT_SUPPORT;
 	}
 
     *puiNum = strtoul(pszBuf, NULL, 10);

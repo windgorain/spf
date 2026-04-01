@@ -68,6 +68,8 @@ BS_STATUS DC_XML_GetFieldValueAsUint
     OUT UINT *puiValue
 );
 
+char * DC_XML_GetFieldValueAsString(HANDLE hHandle, char *pcTableName, DC_DATA_S *pstKey, char *pcFieldName);
+
 BS_STATUS DC_XML_CpyFieldValueAsString
 (
     IN HANDLE hHandle,

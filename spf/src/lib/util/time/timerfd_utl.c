@@ -16,14 +16,21 @@ static void _win_timerfd_Main(IN USER_HANDLE_S *pstUserHandle)
 
     for (;;) {
         Sleep(interval);
-        Socket_Write(fd, "0", 1, 0);
+        int ret = Socket_Write(fd, "0", 1, 0);
+        if ((ret < 0) && (ret != SOCKET_E_AGAIN)) {
+            
+            break;
+        }
     }
+
+    Socket_Close(fd);
 }
 
 static int _os_timerfd_create_ext(int first_ts,int interval, UINT flag)
 {
     int fds[2];
     USER_HANDLE_S user_data;
+    char thread_name[32];
 
     if (BS_OK != Socket_Pair(SOCK_STREAM, fds)) {
         return -1;
@@ -33,7 +40,9 @@ static int _os_timerfd_create_ext(int first_ts,int interval, UINT flag)
     user_data.ahUserHandle[1] = UINT_HANDLE(interval);
     user_data.ahUserHandle[2] = UINT_HANDLE(first_ts);
 
-    THREAD_Create("timer_fd", NULL, _win_timerfd_Main, &user_data);
+    snprintf(thread_name, sizeof(thread_name), "timer_fd%u", fds[0]);
+
+    THREAD_Create(thread_name, NULL, _win_timerfd_Main, &user_data);
 
     return fds[0];
 }

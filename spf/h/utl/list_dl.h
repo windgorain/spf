@@ -85,14 +85,26 @@ static inline void DL_AddHead(DL_HEAD_S* pstList, DL_NODE_S* pstNode)
     return;
 }
 
+static inline void DL_AddHeadRcu(DL_HEAD_S* pstList, DL_NODE_S* pstNode)
+{
+    pstNode->ppstPre = &pstList->pstFirst;
+    pstNode->pstNext = pstList->pstFirst;
+
+    ATOM_BARRIER();
+ 
+    if (pstNode->pstNext) {
+        pstNode->pstNext->ppstPre = &pstNode->pstNext;
+    }
+    pstList->pstFirst = pstNode;
+    return;
+}
+
 static inline DL_NODE_S* DL_DelHead(const DL_HEAD_S* pstList)
 {
     DL_NODE_S* pstNode = DL_First(pstList);
-    if (NULL != pstNode)
-    {
+    if (NULL != pstNode) {
         DL_Del(pstNode);
     }
-
     return pstNode;
 }
 
@@ -101,8 +113,22 @@ static inline void DL_AddAfter(DL_NODE_S* pstPrev, DL_NODE_S* pstInst)
     pstInst->ppstPre = &pstPrev->pstNext;
     pstInst->pstNext = pstPrev->pstNext;
     pstPrev->pstNext = pstInst;
-    if (NULL != pstInst->pstNext)
-    {
+    if (NULL != pstInst->pstNext) {
+        pstInst->pstNext->ppstPre = &pstInst->pstNext;
+    }
+
+    return;
+}
+
+static inline void DL_AddAfterRcu(DL_NODE_S* pstPrev, DL_NODE_S* pstInst)
+{
+    pstInst->ppstPre = &pstPrev->pstNext;
+    pstInst->pstNext = pstPrev->pstNext;
+
+    ATOM_BARRIER();
+
+    pstPrev->pstNext = pstInst;
+    if (NULL != pstInst->pstNext) {
         pstInst->pstNext->ppstPre = &pstInst->pstNext;
     }
 
@@ -114,8 +140,7 @@ static inline void DL_AddAfterPtr (DL_NODE_S **ppstPre, DL_NODE_S  *pstInst)
     pstInst->ppstPre = ppstPre;
     pstInst->pstNext = *ppstPre;
     *ppstPre = pstInst;
-    if (NULL != pstInst->pstNext)
-    {
+    if (NULL != pstInst->pstNext) {
         pstInst->pstNext->ppstPre = &pstInst->pstNext;
     }
     return;
@@ -125,8 +150,22 @@ static inline void DL_AddBefore(DL_NODE_S* pstNext, DL_NODE_S* pstInst)
 {
     pstInst->ppstPre = pstNext->ppstPre;
     pstInst->pstNext = pstNext;
-    if (NULL != pstInst->ppstPre)
-    {
+    if (NULL != pstInst->ppstPre) {
+        *pstInst->ppstPre = pstInst;
+    }
+    pstInst->pstNext->ppstPre = &pstInst->pstNext;
+
+    return;
+}
+
+static inline void DL_AddBeforeRcu(DL_NODE_S* pstNext, DL_NODE_S* pstInst)
+{
+    pstInst->ppstPre = pstNext->ppstPre;
+    pstInst->pstNext = pstNext;
+
+    ATOM_BARRIER();
+
+    if (NULL != pstInst->ppstPre) {
         *pstInst->ppstPre = pstInst;
     }
     pstInst->pstNext->ppstPre = &pstInst->pstNext;
@@ -180,6 +219,27 @@ static inline void DL_AddBefore(DL_NODE_S* pstNext, DL_NODE_S* pstInst)
           NULL != (pstEntry); \
           (VOID)({(ppstPre) = &((pstEntry)->member.pstNext); \
                    (pstEntry) = DL_ENTRY_NEXT(pstEntry, member);}))
+
+#define DL_FOREACH_RCU(pstList, pstNode) \
+    for ((pstNode) = ((pstList)->pstFirst); \
+         (NULL != (pstNode)) && ({Prefetch(pstNode->pstNext); BOOL_TRUE;}); \
+         (pstNode) = (pstNode->pstNext))
+
+#define DL_FOREACH_SAFE_RCU(pstList, pstNode, pstNextNode) \
+    for ((pstNode) = (pstList)->pstFirst; \
+        (NULL != (pstNode)) && ({(pstNextNode) = ((pstNode)->pstNext); BOOL_TRUE;}); \
+        (pstNode) = (pstNextNode))
+
+#define DL_FOREACH_PREVPTR_RCU(pstList, pstNode, ppstPre) \
+    for ((pstNode) = ((pstList)->pstFirst), (ppstPre) = &((pstList)->pstFirst); \
+         (NULL != (pstNode)) && ({Prefetch((pstNode)->pstNext); BOOL_TRUE;}); \
+         (VOID)({(ppstPre) = &((pstNode)->pstNext); \
+                  (pstNode) = ((pstNode)->pstNext);}))
+
+#define DL_ENTRY_NEXT_Prefetch(pstEntry, member) \
+        (NULL == DL_Next(&((pstEntry)->member)) ? NULL : \
+              Prefetch(DL_ENTRY(DL_Next(&((pstEntry)->member)), typeof(*(pstEntry)), member)))
+
 
 
 static inline void DL_Append(DL_HEAD_S* pstDstList, DL_HEAD_S* pstSrcList)

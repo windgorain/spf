@@ -12,33 +12,23 @@
 
 typedef void (*PF_RCU_FREE_FUNC)(void *pstRcuNode);
 
-typedef struct
-{
+typedef struct {
     SPINLOCK_S stLock;
     int uiCurrentPhase;
     UINT auiCounter[2];
     SL_HEAD_S free_list[2];
 }RCU_S;
 
-typedef RCU_S* RCU_HANDLE;
-
-typedef struct
-{
+typedef struct {
     SL_NODE_S node;
     PF_RCU_FREE_FUNC pfFunc;
 }RCU_NODE_S;
 
 void RCU_Init(INOUT RCU_S *rcu);
 
-VOID RCU_Call
-(
-    IN RCU_HANDLE hRcuHandle,
-    IN RCU_NODE_S *pstRcuNode,
-    IN PF_RCU_FREE_FUNC pfFreeFunc
-);
-
-int RCU_Lock(IN RCU_HANDLE hRcuHandle);
-VOID RCU_UnLock(IN RCU_HANDLE hRcuHandle, IN UINT uiPhase);
+void RCU_Call(RCU_S *rcu, RCU_NODE_S *pstRcuNode, PF_RCU_FREE_FUNC pfFreeFunc);
+int RCU_Lock(RCU_S *rcu);
+void RCU_UnLock(RCU_S *rcu, int phase);
 
 #ifdef __cplusplus
     }

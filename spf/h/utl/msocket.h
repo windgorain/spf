@@ -36,23 +36,8 @@ BS_STATUS MSocket_Bind(IN MSOCKET_ID uiSocketId, IN UINT uiIp, IN USHORT usPort)
 BS_STATUS MSocket_SetRecvBufSize(IN MSOCKET_ID uiSocketId, IN UINT uiBufLen);
 BS_STATUS MSocket_SetSendBufSize(IN MSOCKET_ID uiSocketId, IN UINT uiBufLen);
 BS_STATUS MSocket_Listen(IN MSOCKET_ID uiSocketId, UINT uiLocalIp, IN USHORT usPort, IN UINT uiBacklog);
-BS_STATUS MSocket_SendTo
-(
-    IN MSOCKET_ID uiSocketId,
-    IN VOID *pBuf,
-    IN UINT uiBufLen,
-    IN UINT uiToIp,
-    IN USHORT usToPort
-);
-BS_STATUS MSocket_RecvFrom
-(
-    IN MSOCKET_ID uiSocketId,
-    OUT VOID *pBuf,
-    IN UINT uiBufLen,
-    OUT UINT *puiRecvLen,
-    OUT UINT *puiFromIp,
-    OUT USHORT *pusFromPort
-);
+BS_STATUS MSocket_SendTo(MSOCKET_ID fd, void *pBuf, U32 uiBufLen, UINT uiToIp, U16 usToPort);
+int MSocket_RecvFrom(MSOCKET_ID fd, OUT void *buf, U32 buf_size, OUT U32 *from_ip, OUT U16 *from_port);
 BS_STATUS MSocket_Pair(UINT uiType, OUT MSOCKET_ID auiFd[2]);
 VOID MSocket_FdSet(IN MSOCKET_ID uiSocketId, IN fd_set *pstFdSet);
 BOOL_T MSocket_FdIsSet(IN MSOCKET_ID uiSocketId, IN fd_set *pstFdSet);

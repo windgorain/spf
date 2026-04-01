@@ -38,7 +38,7 @@ INT LDATA_CaseCmp(LDATA_S *data1, LDATA_S *data2);
 
 static inline void * LDATA_BoundsCheck(LDATA_S *d, U64 offset, U64 size)
 {
-    if (offset + size > d->len || offset + size < offset) {
+    if ((offset + size > d->len) || (offset + size < offset)) {
         return NULL;
     }
     return d->data + offset;
@@ -46,7 +46,7 @@ static inline void * LDATA_BoundsCheck(LDATA_S *d, U64 offset, U64 size)
 
 static inline void * LLDATA_BoundsCheck(LLDATA_S *d, U64 offset, U64 size)
 {
-    if (offset + size > d->len || offset + size < offset) {
+    if ((offset + size > d->len) || (offset + size < offset)) {
         return NULL;
     }
     return d->data + offset;

@@ -63,6 +63,9 @@ BOOL_T Socket_IsIPv4(IN CHAR *pcIpOrName)
 
 UINT Socket_Ipsz2IpNet(char *pcIP)
 {
+    if (! pcIP) {
+        return 0;
+    }
     return inet_addr(pcIP);
 }
 

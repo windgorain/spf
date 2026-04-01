@@ -5,24 +5,24 @@
 ================================================================*/
 #ifndef _MPLS_UTL_H
 #define _MPLS_UTL_H
+#include "utl/endian_utl.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-typedef struct {
+#define MPLS_LABEL(_hdr) ((_hdr)->flag >> 12)
+#define MPLS_EXP(_hdr) (((_hdr)->flag >> 9) & 0x7)
+#define MPLS_BOTTOM(_hdr) (((_hdr)->flag >> 8) & 0x1)
+#define MPLS_TTL(_hdr) ((_hdr)->flag & 0xff)
 
-#if BS_BIG_ENDIAN
-    UINT label: 20;
-    UINT exp: 3;
-    UINT bottom: 1;
-    UINT ttl: 8;
-#else
-    UINT ttl: 8;
-    UINT bottom: 1;
-    UINT exp: 3;
-    UINT label: 20;
-#endif
+#define MPLS_SET_LABEL(_hdr, _label) ((_hdr)->flag |= (_label << 12))
+#define MPLS_SET_EXP(_hdr, _exp) ((_hdr)->flag | (((_exp) & 0x7) << 9))
+#define MPLS_SET_BOTTOM(_hdr, _bottom) ((_hdr)->flag | (((_bottom) & 0x1) << 8))
+#define MPLS_SET_TTL(_hdr, _ttl) ((_hdr)->flag | ((_ttl) & 0xff))
+
+typedef struct {
+    U32 flag;
 }MPLS_HEAD_S;
 
 #ifdef __cplusplus

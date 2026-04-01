@@ -27,7 +27,7 @@ static int _load_spf(char *file)
     p.instance = ".spfrun";
     p.flag = MYBPF_LOADER_FLAG_AUTO_ATTACH | MYBPF_LOADER_FLAG_JIT;
 
-    int ret = g_mybpf_spf_ctrl->load_instance(&p);
+    int ret = g_mybpf_spf_ctrl->load_instance(&p, NULL, 0);
     if (ret < 0) {
         printf("Load %s failed \n", file);
     }

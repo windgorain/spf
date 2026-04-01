@@ -33,7 +33,7 @@ static int _load_spf(char *instance, void *data, U32 data_size)
     p.instance = instance;
     p.flag = MYBPF_LOADER_FLAG_AUTO_ATTACH | MYBPF_LOADER_FLAG_SKIP_JIT_HELPER_CHECK;
 
-    int ret = g_mybpf_spf_ctrl->load_instance(&p);
+    int ret = g_mybpf_spf_ctrl->load_instance(&p, NULL, 0);
     if (ret < 0) {
         printf("Load %s failed \n", instance);
     }
@@ -71,7 +71,14 @@ static int _run_spf(int argc, char **argv)
     p.p[0] = argc;
     p.p[1] = (long)argv;
 
-    int ret =g_mybpf_spf_ctrl->run_hookpoint(MYBPF_HP_TCMD, &p);
+    if (argc < 1) {
+        printf("Argc error\n");
+        return -1;
+    }
+
+    argv[0] = "runbpf"; 
+
+    int ret = g_mybpf_spf_ctrl->run_hookpoint(MYBPF_HP_TCMD, &p);
     if (ret < 0) {
         return ret;
     }

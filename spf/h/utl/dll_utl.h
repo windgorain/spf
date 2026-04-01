@@ -47,13 +47,13 @@ static inline void DLL_INIT(DLL_HEAD_S *pstDllHead) {
 #define DLL_NODE_INIT(pstNode) \
         memset((pstNode), 0, sizeof(DLL_NODE_S))
 
-static inline UINT DLL_COUNT(void *dll_head) {
+static inline UINT DLL_COUNT(const void *dll_head) {
     return ((DLL_HEAD_S*)dll_head)->ulCount;
 }
 
 #define DLL_GET_HEAD(pstNode) (((DLL_NODE_S*)(pstNode))->pstHead)
 
-static inline void * DLL_FIRST(DLL_HEAD_S *pstDllHead) {
+static inline void * DLL_FIRST(const DLL_HEAD_S *pstDllHead) {
     if (DLL_COUNT(pstDllHead) == 0) {
         return NULL;
     }
@@ -169,9 +169,7 @@ static inline void DLL_DEL(DLL_HEAD_S *pstDllHead, void *del_node) {
 
 
 #define DLL_SCAN(pstDllHead,pstNode)    \
-    for (pstNode = DLL_FIRST(pstDllHead); \
-        pstNode != NULL; \
-        pstNode = DLL_NEXT(pstDllHead,pstNode))
+    for (pstNode = DLL_FIRST(pstDllHead); pstNode != NULL; pstNode = DLL_NEXT(pstDllHead,pstNode))
 
 #define DLL_SAFE_SCAN(pstDllHead,pstNode,pstNodeTmp)    \
     for (pstNode = DLL_FIRST(pstDllHead), pstNodeTmp = DLL_NEXT(pstDllHead,pstNode); \
@@ -238,13 +236,8 @@ extern void DLL_Sort(IN DLL_HEAD_S *pstDllHead, IN PF_DLL_CMP_FUNC pfFunc, IN HA
 
 extern int DLL_UniqueSortAdd(DLL_HEAD_S *head, DLL_NODE_S *node, PF_DLL_CMP_FUNC cmp_func, void *user_data);
 
-extern void DLL_SortAdd
-(
-    IN DLL_HEAD_S *pstDllHead,
-    IN DLL_NODE_S *pstNewNode,
-    IN PF_DLL_CMP_FUNC pfFunc,
-    IN HANDLE hUserHandle
-);
+
+extern void DLL_SortAdd(DLL_HEAD_S *list, DLL_NODE_S *node, PF_DLL_CMP_FUNC pfFunc, HANDLE uh);
 
 extern void DLL_Cat (IN DLL_HEAD_S *pstDllHeadDst, IN DLL_HEAD_S *pstDllHeadSrc);
 

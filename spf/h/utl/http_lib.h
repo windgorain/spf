@@ -3,54 +3,56 @@
 #define __HTTP_LIB_H_
 
 #include "utl/mempool_utl.h"
+#include "utl/http_head_raw.h"
 
 #ifdef  __cplusplus
 extern "C"{
 #endif
 
-#if 1   
+#if 1   /* HTTP头解析 */
 
 #define HTTP_MIN_FIRST_LINE_LEN (sizeof("GET / HTTP/1.1\r\n") - 1)
 
-#define HTTPD_SERVICE_MAX_URLPATH_LEN 255UL
+#define HTTP_HOST_NAME_LEN 127
+#define HTTP_HOST_NAME_SIZE (HTTP_HOST_NAME_LEN + 1)
 
+/* HTTP协议解析器 */
 
+#define HTTP_CRLFCRLF                       "\r\n\r\n"      /* HTTP协议请求/响应头分隔符 */
+#define HTTP_CRLFCRLF_LEN 4UL                               /* HTTP协议请求/响应头分隔符长度 */
+#define HTTP_LINE_END_FLAG                  "\r\n"          /* HTTP协议请求/响应/头域行结束标记 */
+#define HTTP_LINE_END_FLAG_LEN 2UL                          /* HTTP协议请求/响应/头域行结束标记长度 */
 
-#define HTTP_CRLFCRLF                       "\r\n\r\n"      
-#define HTTP_CRLFCRLF_LEN 4UL                               
-#define HTTP_LINE_END_FLAG                  "\r\n"          
-#define HTTP_LINE_END_FLAG_LEN 2UL                          
+#define HTTP_CHUNK_FLAG_MAX_LEN     18UL                    /* Chunk块开始标记的长度, 16进制表示的UINT64型, 包含\r\n */
+#define HTTP_CHUNK_EOF_FLAG                 "0\r\n\r\n"     /* 所有Chunk数据传输完成的标记 */
+#define HTTP_CHUNK_EOF_FLAG_LEN 5UL                         /* 所有Chunk数据传输完成的标记长度 */
 
-#define HTTP_CHUNK_FLAG_MAX_LEN     18UL                    
-#define HTTP_CHUNK_EOF_FLAG                 "0\r\n\r\n"     
-#define HTTP_CHUNK_EOF_FLAG_LEN 5UL                         
-
-#define HTTP_MAX_UINT64_LEN       20UL      
-#define HTTP_MAX_UINT_HEX_LEN     8UL       
-#define HTTP_MAX_UINT64_HEX_LEN   16UL      
+#define HTTP_MAX_UINT64_LEN       20UL      /* UINT64 类型字符串表示的最长长度 */
+#define HTTP_MAX_UINT_HEX_LEN     8UL       /* UINT数字的十六进制字符串表示的最大长度 */
+#define HTTP_MAX_UINT64_HEX_LEN   16UL      /* UINT64数字的十六进制字符串表示的最大长度 */
 #define HTTP_MAX_COOKIE_PORT_NUM  16UL
 #define HTTP_MAX_COOKIE_LEN       4096UL
 #define HTTP_MAX_HEAD_LENGTH      8192UL
 #define HTTP_INVALID_VALUE       0xffffffff
 
-#define HTTP_FIELD_BODY_FIRST_MEMBER_DNS             "dns"      
-#define HTTP_FIELD_BODY_FIRST_MEMBER_DNS_LEN         3UL        
-#define HTTP_FIELD_BODY_FIRST_MEMBER_HOST            "host"     
-#define HTTP_FIELD_BODY_FIRST_MEMBER_HOST_LEN        4UL        
+#define HTTP_FIELD_BODY_FIRST_MEMBER_DNS             "dns"      /* HTTPDNS协议响应头标识符 */
+#define HTTP_FIELD_BODY_FIRST_MEMBER_DNS_LEN         3UL        /* HTTPDNS协议响应头标识符长度 */
+#define HTTP_FIELD_BODY_FIRST_MEMBER_HOST            "host"     /* HTTPDNS协议响应头标识符 */
+#define HTTP_FIELD_BODY_FIRST_MEMBER_HOST_LEN        4UL        /* HTTPDNS协议响应头标识符长度 */
 
-#define HTTP_FIELD_BODY_MEMBER_IPS                  "ips"           
-#define HTTP_FIELD_BODY_MEMBER_TYPE                 "type"          
-#define HTTP_FIELD_BODY_MEMBER_TTL                  "ttl"           
-#define HTTP_FIELD_BODY_MEMBER_CLIENT_IP            "client_ip"     
+#define HTTP_FIELD_BODY_MEMBER_IPS                  "ips"           /* HTTPDNS协议响应体,Member */
+#define HTTP_FIELD_BODY_MEMBER_TYPE                 "type"          /* HTTPDNS协议响应体,Member */
+#define HTTP_FIELD_BODY_MEMBER_TTL                  "ttl"           /* HTTPDNS协议响应体,Member */
+#define HTTP_FIELD_BODY_MEMBER_CLIENT_IP            "client_ip"     /* HTTPDNS协议响应体,Member */
 
-#define HTTP_FIELD_BODY_RESPONS_DNS_MAX              16         
+#define HTTP_FIELD_BODY_RESPONS_DNS_MAX              16         /* HTTPDNS协议响应体支持DNS请求数量 */
 
-
+/* 协议解析器需要用到的固定字符串 */
 #define HTTP_HEAD_FIELD_STATUS                 "Status"           
 #define HTTP_PART_HEAD_DISPOSITION_TYPE        "Disposition-Type" 
 
 
-
+/* 请求头域 */
 #define HTTP_FIELD_ACCEPT                      "Accept"
 #define HTTP_FIELD_ACCEPT_CHARSET              "Accept-Charset"
 #define HTTP_FIELD_ACCEPT_ENCODING             "Accept-Encoding"
@@ -77,9 +79,12 @@ extern "C"{
 #define HTTP_FIELD_COOKIE                      "Cookie"
 #define HTTP_FIELD_COOKIE2                     "Cookie2"
 
+#define HTTP_MULTIPART_STR                "multipart"           /* Content-Type值域 multipart */    
+#define HTTP_CONTENT_TYPE_OCSP            "application/ocsp-response"       /* Content-Type值域 ocsp-response */
+#define HTTP_CONTENT_TYPE_JSON            "application/json"                /* Content-Type值域 json */
 
 
-
+/* 响应头域 */
 #define HTTP_FIELD_ACCEPT_RANGES               "Accept-Ranges"                             
 #define HTTP_FIELD_AGE                         "Age"                                       
 #define HTTP_FIELD_ETAG                        "ETag"                                      
@@ -93,7 +98,7 @@ extern "C"{
 #define HTTP_FIELD_SET_COOKIE2                 "Set-Cookie2"
 
 
-
+/* 通用头域 */
 #define HTTP_FIELD_CATCH_CONTROL               "Cache-Control"     
 #define HTTP_FIELD_CONNECTION                  "Connection"
 #define HTTP_FIELD_DATE                        "Date"      
@@ -104,7 +109,7 @@ extern "C"{
 #define HTTP_FIELD_VIA                         "Via"                            
 #define HTTP_FIELD_WARNING                     "Warning"                        
 
-
+/* 体属性头域 */
 #define HTTP_FIELD_ALLOW                       "Allow"                                        
 #define HTTP_FIELD_CONTENT_ENCODING            "Content-Encoding"       
 #define HTTP_FIELD_CONTENT_LANGUAGE            "Content-Language"       
@@ -117,12 +122,12 @@ extern "C"{
 #define HTTP_FIELD_LAST_MODIFIED               "Last-Modified"                                 
 #define HTTP_FIELD_CONTENT_DISPOSITION         "Content-Disposition"    
                
-
+/* HTTP协议ULR中不同字段的分隔符 */
 #define HTTP_EQUAL_CHAR                    '='
 #define HTTP_AND_CHAR                      '&'
 #define HTTP_SEMICOLON_CHAR                ';'
 #define HTTP_SEMICOLON_STRING              ";"
-#define HTTP_BACKSLASH_CHAR                '/'                          
+#define HTTP_BACKSLASH_CHAR                '/'                     /* 反斜线字符 */     
 #define HTTP_BACKSLASH_STRING              "/"                      
 #define HTTP_HEAD_FIELD_SPLIT_CHAR         ':'                     
 #define HTTP_HEAD_URI_QUERY_CHAR           '?'                     
@@ -307,8 +312,7 @@ typedef enum tagHTTP_Connection {
 }HTTP_CONNECTION_E;
 
 
-typedef enum
-{
+typedef enum {
     HTTP_BODY_TRAN_TYPE_CONTENT_LENGTH, 
     HTTP_BODY_TRAN_TYPE_CLOSED,         
     HTTP_BODY_TRAN_TYPE_CHUNKED,        
@@ -316,8 +320,7 @@ typedef enum
 }HTTP_BODY_TRAN_TYPE_E;
 
 
-typedef enum
-{
+typedef enum {
     HTTP_BODY_CONTENT_TYPE_NORMAL,
     HTTP_BODY_CONTENT_TYPE_MULTIPART,
     HTTP_BODY_CONTENT_TYPE_OCSP,
@@ -402,22 +405,6 @@ BOOL_T HTTP_IsValidHeadChars(unsigned char *buf, int len);
 BOOL_T HTTP_IsHttpHead(char *buf, int len);
 
 #endif  
-
-#if 1  
-typedef int (*PF_HTTP_RAW_SCAN)(char *field, int field_len, char *value, int value_len, void *ud);
-int HTTP_HeadRawScan(char *head, int head_len, PF_HTTP_RAW_SCAN out_func, void *ud);
-
-typedef struct {
-    LSTR_S first_line;
-    DLL_HEAD_S field_list;
-}HTTP_HEAD_RAW_S;
-
-int HTTP_HeadRawInit(HTTP_HEAD_RAW_S *ctrl);
-int HTTP_HeadRawReset(HTTP_HEAD_RAW_S *ctrl);
-int HTTP_HeadRawFin(HTTP_HEAD_RAW_S *ctrl);
-int HTTP_HeadRawParse(HTTP_HEAD_RAW_S *ctrl, char *head, int head_len);
-LSTR_S * HTTP_HeadRawGetField(HTTP_HEAD_RAW_S *ctrl, char *field);
-#endif
 
 #if 1   
 
@@ -536,6 +523,10 @@ INT HttpcRecver_Read(IN HTTPC_RECVER_HANDLE hRecver, IN UCHAR *pucBuf, IN UINT u
 HTTP_HEAD_PARSER HttpcRecver_GetHttpParser(IN HTTPC_RECVER_HANDLE hRecver);
 
 
+#endif
+
+#if 1 
+HTTP_BODY_CONTENT_TYPE_E HTTP_ParseContentType(char *content_type, int content_type_len);
 #endif
 
 #ifdef  __cplusplus

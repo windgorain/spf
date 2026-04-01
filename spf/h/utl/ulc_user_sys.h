@@ -6,6 +6,7 @@
 #ifndef _ULC_USER_SYS_H
 #define _ULC_USER_SYS_H
 
+#include "utl/args_def.h"
 #include "utl/mybpf_utl.h"
 #include "ulc_helper_id.h"
 
@@ -31,6 +32,7 @@ static unsigned long (*ulc_sys_copy_from_user)(void *to, void *from, unsigned lo
 static unsigned long (*ulc_sys_copy_to_user)(void *to, void *from, unsigned long len) = (void*)ULC_ID_COPY_TO_USER;
 
 static int (*ulc_sys_printf)(char *fmt, ...) = (void*)ULC_ID_PRINTF;
+static int (*ulc_sys_printfx)(char *fmt, U64 *d, int count) = (void*)ULC_ID_PRINTFX;
 static int (*ulc_sys_puts)(const char *str) =  (void*)ULC_ID_PUTS;
 static int (*ulc_sys_sprintf)(char *buf, const char *fmt, ...) =  (void*)ULC_ID_SPRINTF;
 static int (*ulc_sys_getc)(void *fp) = (void*)ULC_ID_GETC;
@@ -57,6 +59,8 @@ static int (*ulc_sys_fprintf)(void *fp, char *fmt, U64 *d, int count) = (void*)U
 static int (*ulc_sys_fscanf)(void *fp, const char *fmt, U64 *d, int count) = (void*)ULC_ID_FSCANF;
 static void * (*ulc_sys_tmpfile)(void) = (void*)ULC_ID_TMPFILE;
 static char * (*ulc_sys_tmpnam)(char *str) = (void*)ULC_ID_TMPNAM;
+static int (*ulc_sys_open)(const char *pathname, int flags) = (void*)ULC_ID_OPEN;
+static long (*ulc_sys_read)(int fd, void *buf, long len) = (void*)ULC_ID_READ;
 
 static void * (*ulc_sys_localeconv)(void) = (void*)ULC_ID_LOCALECONV;
 static char * (*ulc_sys_setlocale)(int category, const char *locale) = (void*)ULC_ID_SETLOCALE;
@@ -94,6 +98,8 @@ static void (*ulc_sys_rcu_sync)(void) = (void*)ULC_ID_RCU_SYNC;
 static void (*ulc_sys_rcu_barrier)(void) = (void*)ULC_ID_RCU_BARRIER;
 
 static int (*ulc_sys_get_errno)(void) = (void*)ULC_ID_ERRNO;
+static void (*ulc_sys_set_errno)(int err) = (void*)ULC_ID_SET_ERRNO;
+
 static int (*ulc_sys_setjmp)(void *env) = (void*)ULC_ID_SETJMP;
 static void (*ulc_sys_longjmp)(void *env, int val) = (void*)ULC_ID_LONGJMP;
 
@@ -136,6 +142,53 @@ static char * (*ulc_get_self_name)(void *self) = (void*)ULC_ID_GET_SELF_NAME;
 static int (*_ulc_idfunc_run)(U32 id, MYBPF_PARAM_S *p) = (void*)ULC_ID_IDFUNC_RUN;
 static int (*_ulc_namefunc_run)(char *name, MYBPF_PARAM_S *p) = (void*)ULC_ID_NAMEFUNC_RUN;
 static int (*_ulc_evob_notify)(U32 event, MYBPF_PARAM_S *p) = (void*)ULC_ID_EVOB_NOTIFY;
+
+#define ulc_idfunc_run(_err_ret, _id, ...) ({ \
+    MYBPF_PARAM_S _p = {0}; _p.bpf_ret = (_err_ret); \
+    _p.p[0] = (long)BS_ARG_GET(1, ##__VA_ARGS__); \
+    _p.p[1] = (long)BS_ARG_GET(2, ##__VA_ARGS__); \
+    _p.p[2] = (long)BS_ARG_GET(3, ##__VA_ARGS__); \
+    _p.p[3] = (long)BS_ARG_GET(4, ##__VA_ARGS__); \
+    _p.p[4] = (long)BS_ARG_GET(5, ##__VA_ARGS__); \
+    _ulc_idfunc_run((_id), &_p); \
+    _p.bpf_ret; \
+    })
+
+#define ulc_namefunc_run(_err_ret, _name, ...) ({ \
+    MYBPF_PARAM_S _p = {0}; _p.bpf_ret = (_err_ret); \
+    _p.p[0] = (long)BS_ARG_GET(1, ##__VA_ARGS__); \
+    _p.p[1] = (long)BS_ARG_GET(2, ##__VA_ARGS__); \
+    _p.p[2] = (long)BS_ARG_GET(3, ##__VA_ARGS__); \
+    _p.p[3] = (long)BS_ARG_GET(4, ##__VA_ARGS__); \
+    _p.p[4] = (long)BS_ARG_GET(5, ##__VA_ARGS__); \
+    _ulc_namefunc_run((_name), &_p); \
+    _p.bpf_ret; \
+    })
+
+
+#define ulc_evob_notify(_err_ret, _event, ...) ({ \
+    MYBPF_PARAM_S _p = {0}; _p.bpf_ret = (_err_ret); \
+    _p.p[0] = (long)BS_ARG_GET(1, ##__VA_ARGS__); \
+    _p.p[1] = (long)BS_ARG_GET(2, ##__VA_ARGS__); \
+    _p.p[2] = (long)BS_ARG_GET(3, ##__VA_ARGS__); \
+    _p.p[3] = (long)BS_ARG_GET(4, ##__VA_ARGS__); \
+    _ulc_evob_notify((_event), &_p); \
+    _p.bpf_ret; \
+    })
+
+#define ulc_call_sym_name(_err_ret, _name, ...) ({ \
+        U64 _ret = (_err_ret); \
+        U64 (*_func)(U64,U64,U64,U64,U64) = ulc_sys_get_sym(_name); \
+        if (_func) { \
+                _ret = _func((long)BS_ARG_GET(1, ##__VA_ARGS__),\
+                        (long)BS_ARG_GET(2, ##__VA_ARGS__), \
+                        (long)BS_ARG_GET(3, ##__VA_ARGS__), \
+                        (long)BS_ARG_GET(4, ##__VA_ARGS__), \
+                        (long)BS_ARG_GET(5, ##__VA_ARGS__)); \
+        } \
+        _ret; })
+
+#define ulc_call_sym(_err_ret, _name, ...) ulc_call_sym_name(_err_ret, #_name, ##__VA_ARGS__)
 
 #endif
 

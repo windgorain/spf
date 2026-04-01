@@ -47,21 +47,9 @@ VOID LSTR_MSplit
     OUT LSTR_S *pstStr2
 );
 
-VOID LSTR_Split
-(
-    IN LSTR_S *pstString,
-    IN CHAR cSplitChar, 
-    OUT LSTR_S *pstStr1,
-    OUT LSTR_S *pstStr2
-);
+VOID LSTR_Split(LSTR_S *pstString, char cSplitChar,  OUT LSTR_S *pstStr1, OUT LSTR_S *pstStr2);
 
-UINT LSTR_XSplit
-(
-    IN LSTR_S *pstString,
-    IN CHAR cSplitChar, 
-    OUT LSTR_S *pstStr,
-    IN UINT uiCount 
-);
+U32 LSTR_XSplit(LSTR_S *str, char sp, OUT LSTR_S *outs, U32 count);
 
 BS_STATUS LSTR_GetValueByKey
 (
@@ -81,13 +69,14 @@ INT LSTR_CaseCmp(IN LSTR_S *pstStr, IN LSTR_S *pstStr2);
 
 CHAR *LSTR_Strlcpy(IN LSTR_S *pstStr, IN UINT uiSzSize, OUT CHAR *pcSz);
 VOID LSTR_Cat(IN LSTR_S *pstStr1, IN LSTR_S *pstStr2);
+U64 LSTR_Strtoull(LSTR_S *pstStr, int base);
 BS_STATUS LSTR_Atoui(IN LSTR_S *pstStr, OUT UINT *puiNum);
 UINT LSTR_A2ui(IN LSTR_S *pstStr);
 BS_STATUS LSTR_XAtoui(IN LSTR_S *pstStr, OUT UINT *puiNum);
 
 BS_STATUS LSTR_GetExt(IN LSTR_S *pstFilePath, OUT LSTR_S *pstExt);
 
-VOID LSTR_Lstr2Str(IN LSTR_S *pstLstr, OUT CHAR *pcStr, IN UINT uiStrSize);
+VOID LSTR_Cpy2Str(IN LSTR_S *pstLstr, OUT CHAR *pcStr, IN UINT uiStrSize);
 
 VOID LSTR_CompressLine(INOUT LSTR_S *pstLstr);
 
@@ -111,6 +100,54 @@ INT LSTR_ScanMultiKV(IN LSTR_S *pstStr, IN char cSplit, IN char cEque, PF_LSTR_M
 
 #define LSTR_SCAN_ELEMENT_END()  }}
 
+
+static inline BOOL_T LSTR_IsEmpty(LSTR_S *l)
+{
+    if ((l) && (l->uiLen > 0)) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+static inline BOOL_T LSTR_HasContent(LSTR_S *l)
+{
+    return (! LSTR_IsEmpty(l));
+}
+
+
+static inline char * LSTR_ToString(LSTR_S *l)
+{
+    if ((! l) || (! l->pcData)) {
+        return NULL;
+    }
+
+    l->pcData[l->uiLen] = '\0';
+
+    return l->pcData;
+}
+
+
+static inline char * LSTR_ToStringWithBak(LSTR_S *l, OUT U8 *bak)
+{
+    if ((! l) || (! l->pcData)) {
+        return NULL;
+    }
+
+    *bak = l->pcData[l->uiLen];
+    l->pcData[l->uiLen] = '\0';
+
+    return l->pcData;
+}
+
+
+static inline void LSTR_RestoreLast(LSTR_S *l, U8 bak)
+{
+    if (l && l->pcData) {
+        l->pcData[l->uiLen] = bak;
+    }
+}
 
 #ifdef __cplusplus
     }

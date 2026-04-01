@@ -266,6 +266,14 @@ BS_STATUS VCLOCK_DelTimer(VCLOCK_INSTANCE_S *pstVClockInstance, VCLOCK_NODE_S *v
     return eRet;
 }
 
+void VCLOCK_SetCallBackFunc(VCLOCK_NODE_S *vclock_node, PF_TIME_OUT_FUNC pfFunc, USER_HANDLE_S *ud)
+{
+    if (ud) {
+        vclock_node->stUserHandle = *ud;
+    }
+
+    vclock_node->pfFunc = pfFunc;
+}
 BOOL_T VCLOCK_IsRunning(VCLOCK_NODE_S *vclock_node)
 {
     return DLL_IN_LIST(&vclock_node->stDllNode);
@@ -285,8 +293,7 @@ VCLOCK_NODE_S * VCLOCK_CreateTimer
 
     pstNode = MEM_ZMalloc(sizeof(VCLOCK_NODE_S));
     if (pstNode) {
-        VCLOCK_AddTimer(hVClockInstanceId, pstNode, first_tick, tick,
-                flag, pfFunc, pstUserHandle);
+        VCLOCK_AddTimer(hVClockInstanceId, pstNode, first_tick, tick, flag, pfFunc, pstUserHandle);
     }
 
     return pstNode;

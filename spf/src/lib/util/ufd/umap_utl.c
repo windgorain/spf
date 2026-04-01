@@ -77,6 +77,11 @@ void * UMAP_Open(UMAP_ELF_MAP_S *elfmap, char *map_name)
 
 void UMAP_Close(UMAP_HEADER_S *map)
 {
+    if (map->magic) {
+        
+        return;
+    }
+
     UMAP_FUNC_TBL_S *opts = _umap_get_opts(map->type);
     if (! opts) {
         return;

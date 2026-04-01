@@ -5,6 +5,10 @@
 ********************************************************/
 #ifndef _MYBPF_PROG_DEF_H
 #define _MYBPF_PROG_DEF_H
+
+#include "mybpf_xdp_def.h"
+#include "mybpf_xdp_ret.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -19,15 +23,6 @@ typedef struct {
     int insn_len; 
     void *insn; 
 }MYBPF_PROG_NODE_S;
-
-typedef struct xdp_buff {
-	void *data;
-	void *data_end;
-	void *data_meta;
-	
-	UINT ingress_ifindex; 
-	UINT rx_queue_index; 
-}MYBPF_XDP_BUFF_S;
 
 #ifdef __cplusplus
 }

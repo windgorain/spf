@@ -126,8 +126,7 @@ PLUG_HIDE CHAR * LOCAL_INFO_GetSavePath()
     return g_szLocalSavePath;
 }
 
-PLUG_HIDE BS_STATUS LOCAL_INFO_ExpandToHostPath(CHAR *pszPath ,
-        OUT CHAR szLocalPath[FILE_MAX_PATH_LEN + 1])
+PLUG_HIDE int LOCAL_INFO_ExpandToHostPath(CHAR *pszPath , OUT CHAR szLocalPath[FILE_MAX_PATH_LEN + 1])
 {
     CHAR *pszHostPath;
 
@@ -148,8 +147,9 @@ PLUG_HIDE BS_STATUS LOCAL_INFO_ExpandToHostPath(CHAR *pszPath ,
     return BS_OK;
 }
 
-PLUG_HIDE BS_STATUS LOCAL_INFO_ExpandToConfPath(CHAR *pszPath ,
-        OUT CHAR szPath[FILE_MAX_PATH_LEN + 1])
+
+
+PLUG_HIDE int LOCAL_INFO_ExpandToConfPath(char *pszPath , OUT CHAR szPath[FILE_MAX_PATH_LEN + 1])
 {
     CHAR *pCfgPath;
 
@@ -170,8 +170,7 @@ PLUG_HIDE BS_STATUS LOCAL_INFO_ExpandToConfPath(CHAR *pszPath ,
     return BS_OK;
 }
 
-PLUG_HIDE BS_STATUS LOCAL_INFO_ExpandToSavePath(CHAR *pszPath ,
-        OUT CHAR szPath[FILE_MAX_PATH_LEN + 1])
+PLUG_HIDE int LOCAL_INFO_ExpandToSavePath(CHAR *pszPath , OUT CHAR szPath[FILE_MAX_PATH_LEN + 1])
 {
     CHAR *path;
 

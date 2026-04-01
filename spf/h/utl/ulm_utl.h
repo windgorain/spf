@@ -19,8 +19,7 @@ typedef HANDLE ULM_HANDLE;
 
 typedef VOID (*PF_ULM_USER_DEL_NOTIFY)(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId);
 
-typedef struct
-{
+typedef struct {
     CHAR szUserName[ULM_MAX_USER_NAME_LEN + 1];
     UINT ulLoginTime; 
 }ULM_USER_INFO_S;
@@ -49,15 +48,15 @@ BS_STATUS ULM_SetMaxUserRefNum(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId, IN UI
 BS_STATUS ULM_IncUserRefNum(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId);
 BS_STATUS ULM_DecUserRefNum(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId);
 BS_STATUS ULM_GetUserRefNum(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId, OUT UINT *pulRefNum);
-BS_STATUS ULM_SetTimeOutTime(IN ULM_HANDLE hUlmHandle, IN UINT ulTimeOutTime );
-BS_STATUS ULM_GetTimeOutTime(IN ULM_HANDLE hUlmHandle, OUT UINT *pulTimeOutTime );
+BS_STATUS ULM_SetTimeOutTime(ULM_HANDLE hUlmHandle, UINT ulTimeOutTime );
+U32 ULM_GetTimeOutTime(ULM_HANDLE hUlmHandle);
 BS_STATUS ULM_StartTimeOut(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId);
 BS_STATUS ULM_StopTimeOut(IN ULM_HANDLE hUlmHandle, IN UINT ulUserId);
 BS_STATUS ULM_StopAllUserTimeOut(IN ULM_HANDLE hUlmHandle);
 BS_STATUS ULM_StartAllUserTimeOut(IN ULM_HANDLE hUlmHandle);
 VOID ULM_SetIfTimeOutIgnoreRef(IN ULM_HANDLE hUlmHandle, IN BOOL_T bIgnore);
 
-VOID ULM_TimeOut(IN ULM_HANDLE hUlmHandle);
+VOID ULM_TickStep(IN ULM_HANDLE hUlmHandle);
 #ifdef __cplusplus
     }
 #endif 

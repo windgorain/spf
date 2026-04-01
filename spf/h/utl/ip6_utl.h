@@ -6,8 +6,8 @@
 #ifndef _IP6_UTL_H
 #define _IP6_UTL_H
 
+#include "utl/net.h"
 #include "utl/ip4_utl.h"
-#include "os/linux_kernel_pile.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -46,7 +46,7 @@ typedef struct {
 
 typedef struct ip6 {
     UINT            vcl;      
-    USHORT           len;      
+    USHORT          len;      
     UCHAR           next;     
     UCHAR           hop_lmt;  
     struct in6_addr ip6_src;  
@@ -82,7 +82,7 @@ typedef struct {
     UCHAR protocol;
 }IP6_UPLAYER_S;
 
-char * inet_ntop6_full(const struct in6_addr *addr, char *dst, socklen_t size);
+char * inet_ntop6_full(const struct in6_addr *addr, char *dst, int size);
 IP6_HEAD_S * IP6_GetIPHeader(UCHAR *pucData, UINT uiDataLen, NET_PKT_TYPE_E enPktType);
 int IP6_GetUpLayer(IP6_HEAD_S *ip6_header, int len, OUT IP6_UPLAYER_S *uplayer);
 
@@ -152,6 +152,20 @@ static inline void * IP6_ADDR_MAX(void *addr1, void *addr2) {
         return addr2;
     }
     return addr1;
+}
+
+
+static inline BOOL_T IP6_IsUnspecified(IN const IN6ADDR_S *pstAddr)
+{
+    const UINT *puiAddr;
+    puiAddr = pstAddr->net_s6_addr32;
+    return ((puiAddr[0] == 0) && (puiAddr[1] == 0) && (puiAddr[2] == 0) && (puiAddr[3] == 0));
+}
+
+
+static inline BOOL_T IP6_IsUnspecifiedU32(IN const U32 *addr)
+{
+    return ((addr[0] == 0) && (addr[1] == 0) && (addr[2] == 0) && (addr[3] == 0));
 }
 
 

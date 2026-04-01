@@ -1,4 +1,4 @@
-mybpf/build
+spf/build
 runtime/mini/build
 *.dylib
 *.so

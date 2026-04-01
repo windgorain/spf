@@ -15,7 +15,7 @@
 #endif 
 
 typedef UINT (*PF_HASH_BY_NODE)(void *node, void *hash); 
-typedef UINT (*PF_HASH_BY_KEY)(void *key, void *ud); 
+typedef UINT (*PF_HASH_BY_KEY)(const void *key, void *ud); 
 
 typedef struct {
     U32 bucket_num;
@@ -32,6 +32,12 @@ typedef struct {
     UINT hash_factor;
 }HASH_NODE_S;
 
+
+typedef struct {
+    U32 bucket; 
+    void *curr; 
+}HASH_ITOR_S;
+
 typedef int (*PF_HASH_WALK_FUNC)(void *hashtbl, void *pstNode, void *pUserHandle);
 typedef VOID  (*PF_HASH_FREE_FUNC)(void *hashtbl, void *pstHashNode, void *pUserHandle);
 
@@ -42,14 +48,15 @@ void HASH_AddWithFactor(HASH_S *hashtbl, void *pstNode, U32 hash_factor);
 void HASH_Add(HASH_S *hashtbl, void *pstNode);
 void HASH_Del(HASH_S *hashtbl, void *pstNode);
 void HASH_DelAll(HASH_S *hashtbl, PF_HASH_FREE_FUNC pfFreeFunc, void *pUserHandle);
-void * HASH_FindWithFactor(HASH_S *hash, U32 hash_factor, PF_CMP_EXT_FUNC cmp_func, void *key, void *ud);
-void * HASH_FindKey(HASH_S *hash, PF_CMP_EXT_FUNC cmp_func, PF_HASH_BY_KEY hash_by_key, void *key, void *ud);
+void * HASH_FindWithFactor(HASH_S *hash, U32 hash_factor, PF_CMP_EXT_FUNC cmp_func, const void *key, void *ud);
+void * HASH_FindKey(HASH_S *hash, PF_CMP_EXT_FUNC cmp_func, PF_HASH_BY_KEY hash_by_key, const void *key, void *ud);
 void * HASH_FindNode(HASH_S *hash, PF_CMP_EXT_FUNC cmp_func, void *node, void *ud);
 U32 HASH_Count(HASH_S *hashtbl);
-void HASH_Walk(HASH_S * hHashId, PF_HASH_WALK_FUNC pfWalkFunc, void *ud);
+int HASH_Walk(HASH_S * hHashId, PF_HASH_WALK_FUNC pfWalkFunc, void *ud);
 
 HASH_NODE_S * HASH_GetNext(HASH_S *hashtbl, HASH_NODE_S *curr_node );
-HASH_NODE_S * HASH_GetNextDict(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_NODE_S *curr_node, void *ud);
+HASH_NODE_S * HASH_DictGetNext(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_NODE_S *curr_node, void *ud);
+HASH_NODE_S * HASH_ItorGetNext(HASH_S * hHash, INOUT HASH_ITOR_S *itor);
 
 static inline void HASH_SetUserData(HASH_S *hash, void *user_data) 
 {

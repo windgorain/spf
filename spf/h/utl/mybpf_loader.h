@@ -10,6 +10,7 @@
 #include "utl/umap_utl.h"
 #include "utl/mybpf_runtime.h"
 #include "utl/mybpf_loader_def.h"
+#include "utl/mybpf_spf_def.h"
 #include "utl/mybpf_aot_def.h"
 #include "utl/mybpf_ioctl_def.h"
 
@@ -42,7 +43,7 @@ typedef struct {
     MYBPF_AOT_PROG_CTX_S aot_ctx; 
 }MYBPF_LOADER_NODE_S;
 
-int MYBPF_LoaderLoad(MYBPF_RUNTIME_S *runtime, MYBPF_LOADER_PARAM_S *p);
+int MYBPF_LoaderLoad(MYBPF_RUNTIME_S *runtime, MYBPF_LOADER_PARAM_S *p, void **maps, int map_count);
 int MYBPF_AttachAuto(MYBPF_RUNTIME_S *runtime, char *instance);
 int MYBPF_LoaderUnload(MYBPF_RUNTIME_S *runtime, char *instance);
 void MYBPF_LoaderUnloadAll(MYBPF_RUNTIME_S *runtime);

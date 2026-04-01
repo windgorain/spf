@@ -43,7 +43,7 @@ int IPString_ParseIpPrefix(CHAR *pcIpPrefixString, OUT IP_PREFIX_S *pstIpPrefix)
     }
 
     if (uiPrefix > 32) {
-        return BS_BAD_PARA;
+        uiPrefix = 32;
     }
 
     pstIpPrefix->ucPrefix = (UCHAR)uiPrefix;

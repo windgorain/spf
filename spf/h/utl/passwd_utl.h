@@ -10,6 +10,7 @@
 
 #include "utl/md5_utl.h"
 #include "utl/aes_utl.h"
+#include "utl/bcrypt_utl.h"
 #include "utl/base64_utl.h"
 
 #ifdef __cplusplus
@@ -17,13 +18,13 @@
 #endif 
 
 #if 1
-#define PW_BASE64_CIPHER_LEN(ulClearLen) BASE64_LEN(AES_CIPHER_LEN(ulClearLen))
+#define PW_BASE64_CIPHER_LEN(clear_max_len) BASE64_LEN(AES_CIPHER_LEN(clear_max_len))
 BS_STATUS PW_Base64Encrypt(IN CHAR *szClearText, OUT CHAR *szCipher, IN ULONG ulCipherSize);
 BS_STATUS PW_Base64Decrypt(IN CHAR *szCipher, OUT CHAR *szClearText, IN ULONG ulClearSize);
 #endif
 
 #if 1
-#define PW_HEX_CIPHER_LEN(ulClearLen) AES_CIPHER_LEN((ulClearLen) * 2)
+#define PW_HEX_CIPHER_LEN(clear_max_len) AES_CIPHER_LEN((clear_max_len) * 2)
 BS_STATUS PW_HexEncrypt(IN CHAR *szClearText, OUT CHAR *szCipher, IN ULONG ulCipherSize);
 BS_STATUS PW_HexDecrypt(IN CHAR *szCipher, OUT CHAR *szClearText, IN ULONG ulClearSize);
 #endif
@@ -36,6 +37,12 @@ BS_STATUS PW_Md5EncryptExt(U8 *in, int in_len, OUT U8 *md5_out, OUT char *cipher
 BS_STATUS PW_Md5Encrypt(char *clear_text, OUT char *cipher_text);
 
 BOOL_T PW_Md5Check(IN CHAR *szClearText, IN CHAR *pcCipherText);
+#endif
+
+#if 1
+int PW_BcryptHashExt(char *password, int rounds, OUT char *bcrypt_out);
+int PW_BcryptHash(char *password, OUT char *bcrypt_out);
+BOOL_T PW_BcryptCheck(const char *pass, const void *hash);
 #endif
 
 #ifdef __cplusplus

@@ -14,7 +14,7 @@
 
 typedef VOID (*PF_MY_IP_HELPER_NOTIFY_ADDR_CHANGE)(IN USER_HANDLE_S *pstUserHandle);
 
-BS_STATUS My_IP_Helper_GetAdapterIndex(IN CHAR *pcAdapterGuid, OUT ULONG *index);
+BS_STATUS My_IP_Helper_GetAdapterIndex(IN CHAR *pcAdapterGuid, OUT U32 *index);
 VOID My_IP_Helper_DeleteAllIpAddress(ULONG adapterIndex);
 VOID My_IP_Helper_DeleteIpAddress(ULONG adapterIndex, UINT uiIp);
 BS_STATUS My_IP_Helper_AddIPAddress(ULONG adapterIndex, UINT uiIp, UINT uiMask);

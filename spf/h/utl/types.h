@@ -9,7 +9,6 @@
 #define __INCazHead_h
 
 #include "utl/int_types.h"
-#include "utl/args_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -86,7 +85,7 @@ extern "C" {
     #define PLUG_RAW_LOAD(pcPlugFilePath)              (PLUG_HDL)LoadLibraryA(pcPlugFilePath)
     #define PLUG_RAW_FREE(ulPlugId)                    FreeLibrary(ulPlugId)
     #define PLUG_GET_FUNC_BY_NAME(ulPlugId,pcFuncName) (void*)GetProcAddress(ulPlugId, pcFuncName)
-    #define PLUG_ERROR()   GetLastError()
+    #define PLUG_ERROR() ""
 
 #else 
 
@@ -160,30 +159,38 @@ typedef struct {
 typedef LLDATA_S FILE_MEM_S;
 
 typedef struct {
-    U32 min;
-    U32 max;
+    U32 begin;
+    U32 end;
 }U32_RANGE_S;
 
 #define BS_DATA_ZERO(_pstData) do {(_pstData)->pucData = NULL; (_pstData)->uiLen = 0;} while(0)
 
 
 typedef VOID 		(*VOID_FUNC)(void);
+
 typedef int         (*INT_FUNC)(void);
+typedef int         (*INT_FUNC1)(void *p1);
+typedef int         (*INT_FUNC2)(void *p1, void *p2);
+
 typedef UINT 		(*UINT_FUNC)(void);
-typedef UINT 		(*UINT_FUNC_1)(VOID *pArg1);
-typedef UINT 		(*UINT_FUNC_2)(VOID *pArg1, VOID *pArg2);
-typedef UINT 		(*UINT_FUNC_3)(VOID *pArg1, VOID *pArg2, VOID *pArg3);
-typedef UINT 		(*UINT_FUNC_4)(VOID *pArg1, VOID *pArg2, VOID *pArg3, VOID *pArg4);
-typedef UINT 		(*UINT_FUNC_5)(VOID *pArg1, VOID *pArg2, VOID *pArg3, VOID *pArg4, VOID *pArg5);
-typedef UINT 		(*UINT_FUNC_6)(VOID *pArg1, VOID *pArg2, VOID *pArg3, VOID *pArg4, VOID *pArg5, VOID *pArg6);
+typedef UINT 		(*UINT_FUNC1)(void *p1);
+typedef UINT 		(*UINT_FUNC2)(void *p1, void *p2);
+typedef UINT 		(*UINT_FUNC3)(void *p1, void *p2, void *p3);
+typedef UINT 		(*UINT_FUNC4)(void *p1, void *p2, void *p3, void *p4);
+typedef UINT 		(*UINT_FUNC5)(void *p1, void *p2, void *p3, void *p4, void *p5);
+typedef UINT 		(*UINT_FUNC6)(void *p1, void *p2, void *p3, void *p4, void *p5, void *p6);
+
 typedef HANDLE 		(*HANDLE_FUNC)(void);
 typedef BOOL_T		(*BOOL_FUNC)(void);
+
 
 typedef int         (*PF_CMP_FUNC)(const void *k, const void *n);
 typedef int         (*PF_CMP_EXT_FUNC)(const void *k, const void *n, const void *ud);
 typedef int         (*PF_LCMP_FUNC)(const void *k, int k_len, const void *n);
 typedef int         (*PF_LCMP_EXT_FUNC)(const void *k, int k_len, const void *n, void *ud);
+
 typedef void        (*PF_DEL_FUNC)(void *n, void *ud);
+
 typedef int         (*PF_WALK_FUNC)(void *n, void *ud);
 typedef int         (*PF_PRINT_FUNC)(const char *fmt, ...);
 
@@ -249,11 +256,10 @@ extern CHAR * ErrInfo_Get(IN BS_STATUS eRet);
 #endif
 
 typedef enum {
-	BS_ACTION_UNDEF = 0,
-    BS_ACTION_DENY,
-    BS_ACTION_PERMIT,
-    
-    
+	BS_ACTION_UNDEF = 0, 
+    BS_ACTION_DENY,      
+    BS_ACTION_PERMIT,    
+
     BS_ACTION_MAX
 }BS_ACTION_E;
 
@@ -291,7 +297,7 @@ typedef enum
 #else
 #define container_of(ptr, type, member) ({			\
 	const typeof(((type *)0)->member) * __mptr = (ptr);	\
-	(type *)((char *)__mptr - offsetof(type, member)); })
+	(type *)(((char *)__mptr) - offsetof(type, member)); })
 #endif
 #endif
 

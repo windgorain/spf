@@ -7,6 +7,7 @@
 #include "bs.h"
 
 #include "utl/bit_opt.h"
+#include "utl/exec_utl.h"
 #include "utl/ctype_utl.h"
 #include "utl/ip_string.h"
 #include "utl/ip_utl.h"
@@ -59,7 +60,7 @@ static inline BOOL_T getopt2_is_must(GETOPT2_NODE_S *node)
 
 static int getopt2_parse_value_u32(GETOPT2_NODE_S *pstNode, CHAR *pcValue)
 {
-	if (FALSE == CTYPE_IsNumString(pcValue)) {
+	if (FALSE == CTYPE_IsNumString(pcValue, strlen(pcValue))) {
         return BS_ERR;
 	}
     *((UINT*)pstNode->value) = strtoul(pcValue, NULL, 10);
@@ -137,6 +138,26 @@ static int getopt2_parse_value_range(GETOPT2_NODE_S *pstNode, CHAR *pcValue)
     return NumList_ParseElement(&lstr, &r->min, &r->max);
 }
 
+
+static int getopt2_parse_value_hex(GETOPT2_NODE_S *pstNode, CHAR *pcValue)
+{
+    U64 *v = pstNode->value;
+    *v = strtoull(pcValue, NULL, 16);
+    return 0;
+}
+
+
+static int getopt2_parse_value_hex_prefix(GETOPT2_NODE_S *pstNode, CHAR *pcValue)
+{
+    LSTR_S lstr;
+    GETOPT2_NUM_PREFIX_S *n = pstNode->value;
+
+    lstr.pcData = pcValue;
+    lstr.uiLen = strlen(pcValue);
+
+    return NumList_ParseHexPrefix(&lstr, &n->number, &n->prefix);
+}
+
 static int getopt2_parse_value_mac(GETOPT2_NODE_S *pstNode, CHAR *pcValue)
 {
     int i = 0;
@@ -179,6 +200,8 @@ static GETOPT2_VALUE_TYPE_S g_getopt2_value_types[] = {
     {.value_type = GETOPT2_V_IP_PREFIX, .value_type_help="IP/Prefix", .func = getopt2_parse_value_ipv4_prefix},
     {.value_type = GETOPT2_V_IP_PORT, .value_type_help="IP:Port", .func = getopt2_parse_value_ipv4_port},
     {.value_type = GETOPT2_V_IP_PROTOCOL, .value_type_help="IPProtocol", .func = getopt2_parse_value_ip_protocol},
+    {.value_type = GETOPT2_V_HEX, .value_type_help="HEX", .func = getopt2_parse_value_hex},
+    {.value_type = GETOPT2_V_HEX_PREFIX, .value_type_help="HEX/Prefix", .func = getopt2_parse_value_hex_prefix},
 };
 
 static GETOPT2_VALUE_TYPE_S * getopt2_find_value_type(int value_type)
@@ -225,7 +248,9 @@ static GETOPT2_NODE_S * getopt2_find_by_long_opt(GETOPT2_NODE_S *pstNodes, char 
     GETOPT2_NODE_S *pstNode;
 
     for (pstNode=pstNodes; pstNode->opt_type != 0; pstNode++) {
-        if ((getopt2_is_opt_type(pstNode->opt_type)) && (0 == strcmp(opt, pstNode->opt_long_name))) {
+        if ((getopt2_is_opt_type(pstNode->opt_type))
+                && (0 == strcmp(opt, pstNode->opt_long_name))
+                && (! (pstNode->flag & GETOPT2_OUT_FLAG_ISSET))) {
             return pstNode;
         }
     }
@@ -277,7 +302,9 @@ static GETOPT2_NODE_S * getopt2_find_by_short_opt(GETOPT2_NODE_S *pstNodes, char
     GETOPT2_NODE_S *pstNode;
 
     for (pstNode=pstNodes; pstNode->opt_type != 0; pstNode++) {
-        if ((getopt2_is_opt_type(pstNode->opt_type)) && (opt == pstNode->opt_short_name)) {
+        if ((getopt2_is_opt_type(pstNode->opt_type)) 
+                && (! (pstNode->flag & GETOPT2_OUT_FLAG_ISSET)) 
+                && (opt == pstNode->opt_short_name)) {
             return pstNode;
         }
     }
@@ -510,6 +537,36 @@ static void getopt2_build_opt_one(GETOPT2_NODE_S *node, OUT char *buf, int buf_s
     }
 }
 
+
+static BOOL_T _getopt2_is_repeat_before(GETOPT2_NODE_S *nodes, GETOPT2_NODE_S *node)
+{
+    GETOPT2_NODE_S *n;
+
+    for (n=nodes; n->opt_type != 0; n++) {
+        if (! getopt2_is_opt_type(node->opt_type)) {
+            continue;
+        }
+
+        if (n == node) {
+            break;
+        }
+
+        if (n->opt_short_name) {
+            if (n->opt_short_name == node->opt_short_name) {
+                return TRUE;
+            }
+        }
+
+        if (n->opt_long_name) {
+            if (strcmp(n->opt_long_name, node->opt_long_name) == 0) {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
 static int getopt2_build_opt_help(GETOPT2_NODE_S *nodes, OUT char *buf, int buf_size)
 {
     GETOPT2_NODE_S *node;
@@ -528,6 +585,10 @@ static int getopt2_build_opt_help(GETOPT2_NODE_S *nodes, OUT char *buf, int buf_
 
         if (node->flag & GETOPT2_FLAG_HIDE) {
             continue;
+        }
+
+        if (_getopt2_is_repeat_before(nodes, node)) {
+            continue; 
         }
 
         len += MY_Snprintf(buf+len, buf_size-len, " ");
@@ -567,6 +628,7 @@ char * GETOPT2_BuildHelpinfo(GETOPT2_NODE_S *nodes, OUT char *buf, int buf_size)
     return buf;
 }
 
+
 int GETOPT2_IsOptSetted(GETOPT2_NODE_S *nodes, char short_opt_name, char *long_opt_name)
 {
     GETOPT2_NODE_S *node;
@@ -605,4 +667,11 @@ void GETOPT2_PrintHelp(GETOPT2_NODE_S *opts)
     char buf[1024];
     printf("%s\r\n", GETOPT2_BuildHelpinfo(opts, buf, sizeof(buf)));
 }
+
+void GETOPT2_Help(GETOPT2_NODE_S *opts)
+{
+    char buf[1024];
+    EXEC_OutInfo("%s\r\n", GETOPT2_BuildHelpinfo(opts, buf, sizeof(buf)));
+}
+
 

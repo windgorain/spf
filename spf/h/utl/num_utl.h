@@ -87,7 +87,7 @@ static inline UINT NUM_To2N(UINT x)
 }
 
 
-static inline ULONG NUM_DoDiv(IN ULONG *pulNum, IN ULONG ulBase)
+static inline U64 NUM_DoDiv(IN U64 *pulNum, IN ULONG ulBase)
 {
     ULONG ulRet;
 

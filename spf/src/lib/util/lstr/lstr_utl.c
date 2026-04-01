@@ -106,13 +106,7 @@ VOID LSTR_MSplit
 }
 
 
-VOID LSTR_Split
-(
-    IN LSTR_S *pstString,
-    IN CHAR cSplitChar, 
-    OUT LSTR_S *pstStr1,
-    OUT LSTR_S *pstStr2
-)
+VOID LSTR_Split(LSTR_S *pstString, char cSplitChar,  OUT LSTR_S *pstStr1, OUT LSTR_S *pstStr2)
 {
     CHAR *pcSplit;
     UINT uiStringLen;
@@ -125,8 +119,8 @@ VOID LSTR_Split
         pstStr2->uiLen = 0;
     } else {
         uiStringLen = pstString->uiLen;
+        pstStr1->uiLen = (UINT)(pcSplit - pstString->pcData); 
         pstStr1->pcData = pstString->pcData;
-        pstStr1->uiLen = (UINT)(pcSplit - pstString->pcData);
         pstStr2->pcData = pcSplit + 1;
         pstStr2->uiLen = uiStringLen - (pstStr1->uiLen + 1);
     }
@@ -135,28 +129,20 @@ VOID LSTR_Split
 }
 
 
-UINT LSTR_XSplit
-(
-    IN LSTR_S *pstString,
-    IN CHAR cSplitChar, 
-    OUT LSTR_S *pstStr,
-    IN UINT uiCount 
-)
+U32 LSTR_XSplit(LSTR_S *str, char sp, OUT LSTR_S *outs, U32 count)
 {
     LSTR_S stReserved;
     UINT i = 0;
 
-    stReserved = *pstString;
+    stReserved = *str;
 
-    while ((i < uiCount) && (stReserved.uiLen > 0))
-    {
-        LSTR_Split(&stReserved, cSplitChar, &pstStr[i], &stReserved);
+    while ((i < count) && (stReserved.uiLen > 0)) {
+        LSTR_Split(&stReserved, sp, &outs[i], &stReserved);
         i++;
     }
 
     return i;
 }
-
 
 
 INT LSTR_StrCmp(IN LSTR_S *pstStr, IN CHAR *pcString)
@@ -187,22 +173,18 @@ INT LSTR_Cmp(IN LSTR_S *pstStr, IN LSTR_S *pstStr2)
     UINT   uiLoop  = 0;
     CHAR  *pcStr   = pstStr->pcData;
 
-    while (uiLoop < uiLen)
-    {
-        if (pcStr[uiLoop] != pstStr2->pcData[uiLoop])
-        {
+    while (uiLoop < uiLen) {
+        if (pcStr[uiLoop] != pstStr2->pcData[uiLoop]) {
             return pcStr[uiLoop] - pstStr2->pcData[uiLoop];
         }
         uiLoop++;
     }
 
-    if (pstStr->uiLen == pstStr2->uiLen)
-    {
+    if (pstStr->uiLen == pstStr2->uiLen) {
         return 0;
     }
 
-    if (pstStr->uiLen > pstStr2->uiLen)
-    {
+    if (pstStr->uiLen > pstStr2->uiLen) {
         return 1;
     }
 
@@ -273,14 +255,41 @@ VOID LSTR_Cat(IN LSTR_S *pstStr1, IN LSTR_S *pstStr2)
     pstStr1->uiLen += pstStr2->uiLen;
 }
 
+
+
+U64 LSTR_Strtoull(LSTR_S *pstStr, int base)
+{
+    char tmp[32];
+
+    if (! pstStr) {
+        return 0;
+    }
+
+    int len = pstStr->uiLen;
+    if (len == 0) {
+        return 0;
+    }
+
+    if (len >= sizeof(tmp)) {
+        len = sizeof(tmp) - 1;
+    }
+
+    memcpy(tmp, pstStr->pcData, len);
+    tmp[len] = '\0';
+
+    return strtoull(tmp, NULL, base);
+}
+
+
 BS_STATUS LSTR_Atoui(IN LSTR_S *pstStr, OUT UINT *puiNum)
 {
-    CHAR szNum[12];
+    CHAR szNum[128];
 
     LSTR_Strlcpy(pstStr, sizeof(szNum), szNum);
 
     return TXT_Atoui(szNum, puiNum);
 }
+
 
 UINT LSTR_A2ui(IN LSTR_S *pstStr)
 {
@@ -293,7 +302,7 @@ UINT LSTR_A2ui(IN LSTR_S *pstStr)
 
 BS_STATUS LSTR_XAtoui(IN LSTR_S *pstStr, OUT UINT *puiNum)
 {
-    CHAR szNum[12];
+    CHAR szNum[128];
 
     LSTR_Strlcpy(pstStr, sizeof(szNum), szNum);
 
@@ -335,25 +344,23 @@ BS_STATUS LSTR_GetExt(IN LSTR_S *pstFilePath, OUT LSTR_S *pstExt)
     return BS_OK;
 }
 
-VOID LSTR_Lstr2Str(IN LSTR_S *pstLstr, OUT CHAR *pcStr, IN UINT uiStrSize)
+
+VOID LSTR_Cpy2Str(IN LSTR_S *pstLstr, OUT CHAR *pcStr, IN UINT uiStrSize)
 {
     UINT uiCopyLen;
 
-    if (uiStrSize == 0)
-    {
+    if (uiStrSize == 0) {
         return;
     }
 
     pcStr[0] = '\0';
 
-    if (NULL == pstLstr)
-    {
+    if (NULL == pstLstr) {
         return;
     }
 
     uiCopyLen = MIN(uiStrSize - 1, pstLstr->uiLen);
-    if (uiCopyLen > 0)
-    {
+    if (uiCopyLen > 0) {
         MEM_Copy(pcStr, pstLstr->pcData, uiCopyLen);
     }
 

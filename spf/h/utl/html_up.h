@@ -14,9 +14,9 @@
 
 typedef VOID* HTML_UP_HANDLE;
 
-typedef enum
-{
+typedef enum {
     HTML_UP_DATA = 0,
+    HTML_UP_HTML,
     HTML_UP_TAG_START,
     HTML_UP_TAG_CONTENT,
     HTML_UP_TAG_END,

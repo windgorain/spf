@@ -12,12 +12,19 @@
 #include "utl/stack_utl.h"
 #include "utl/ctype_utl.h"
 
+
+static inline char _txt_random_spec(char *specs, int len)
+{
+    int i = RAND_Uniform(len);
+    return specs[i];
+}
+
+
 static inline char _txt_random(void)
 {
 #define RANDOM_CHARS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^*()<>[]{}_+=-|\\/,.:`"
     static char *chars = RANDOM_CHARS;
-    int i = RAND_Get() % STR_LEN(RANDOM_CHARS);
-    return chars[i];
+    return _txt_random_spec(chars, STR_LEN(RANDOM_CHARS));
 }
 
 static BS_STATUS _txt_del_sub_str(IN CHAR *pucTxtBuf, IN CHAR *pucSubStr, OUT CHAR *pucTxtOutBuf, IN ULONG ulSize)
@@ -117,6 +124,7 @@ BS_STATUS TXT_Upper(INOUT CHAR *pucTxtBuf)
 
     return BS_OK;
 }
+
 
 VOID TXT_DelSubStr(IN CHAR *pucTxtBuf, IN CHAR *pucSubStr, OUT CHAR *pucTxtOutBuf, IN ULONG ulSize)
 {
@@ -310,6 +318,7 @@ char * TXT_CompressLine(INOUT char * pcString)
     return stStr.pcData;
 }
 
+
 CHAR * TXT_StrimHeadTail(CHAR *pcData, ULONG ulDataLen, CHAR *pcSkipChars, OUT ULONG *pulNewLen)
 {
     CHAR *head = TXT_StrimHead(pcData, ulDataLen, pcSkipChars);
@@ -318,6 +327,7 @@ CHAR * TXT_StrimHeadTail(CHAR *pcData, ULONG ulDataLen, CHAR *pcSkipChars, OUT U
 
     return head;
 }
+
 
 CHAR * TXT_StrimString(IN CHAR *pcData, IN CHAR *pcSkipChars)
 {
@@ -335,7 +345,7 @@ CHAR * TXT_StrimString(IN CHAR *pcData, IN CHAR *pcSkipChars)
 }
 
 
-CHAR *TXT_Strim(IN CHAR *pszStr)
+CHAR * TXT_Strim(IN CHAR *pszStr)
 {
     LSTR_S stString;
 
@@ -725,7 +735,7 @@ BS_STATUS TXT_Atoll(CHAR *pszBuf, OUT INT64 *var)
         RETURN(BS_BAD_PTR);
     }
 
-	if (FALSE == CTYPE_IsNumString(pszBuf)) {
+	if (FALSE == CTYPE_IsNumString(pszBuf, strlen(pszBuf))) {
 		RETURN(BS_ERR);
 	}
 
@@ -768,16 +778,31 @@ long TXT_Strtol(char *str, int base)
     return strtol(str, NULL, base);
 }
 
-CHAR TXT_Random(void)
+
+char TXT_Random(void)
 {
     return _txt_random();
 }
 
+
+CHAR TXT_RandomSpec(char *specs)
+{
+    return _txt_random_spec(specs, strlen(specs));
+}
+
+
 void TXT_StringRandom(OUT char *string, int len)
 {
-    int i;
-    for (i=0; i<len; i++) {
+    for (int i=0; i<len; i++) {
         string[i] = _txt_random();
+    }
+}
+
+
+void TXT_StringRandomSpec(char *specs, OUT char *string, int string_len)
+{
+    for (int i=0; i<string_len; i++) {
+        string[i] = _txt_random_spec(specs, strlen(specs));
     }
 }
 
@@ -809,54 +834,45 @@ CHAR * TXT_StrchrX(IN CHAR *pszStr, IN CHAR pcToFind, IN UINT ulNum)
     return pcFind;
 }
 
+
+
 BS_STATUS TXT_FindBracket
 (
     IN CHAR *pszString,
     IN UINT ulLen,
     IN CHAR *pszBracket,
-    OUT CHAR **ppcStart,
-    OUT CHAR **ppcEnd
+    OUT CHAR **ppcStart, 
+    OUT CHAR **ppcEnd    
 )
 {
     UINT ulCount = 0;
     UINT i;
-    CHAR *pcStart, *pcEnd;
+    CHAR *pcStart = NULL, *pcEnd = NULL;
     
     BS_DBGASSERT(NULL != pszString);
 
-    pcStart = NULL;
-    pcEnd = NULL;
-
-    for (i=0; i<ulLen; i++)
-    {
-        if (pszString[i] == pszBracket[0])
-        {
-            if (pcStart == NULL)
-            {
+    for (i=0; i<ulLen; i++) {
+        if (pszString[i] == pszBracket[0]) {
+            if (! pcStart) {
                 pcStart = pszString + i;
             } 
             ulCount++;
-        }
-        else if (pszString[i] == pszBracket[1])
-        {
-            if (ulCount == 0)
-            {
+        } else if (pszString[i] == pszBracket[1]) {
+            if (ulCount == 0) {
                 RETURN(BS_ERR);
             }
             
             ulCount--;
 
-            if (ulCount == 0)
-            {
+            if (ulCount == 0) {
                 pcEnd = pszString + i;
                 break;
             }
         }
     }
 
-    if (pcEnd == NULL)
-    {
-        RETURN(BS_ERR);
+    if (! pcEnd) {
+        return BS_NOT_FOUND;
     }
 
     *ppcStart = pcStart;

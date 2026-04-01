@@ -35,10 +35,11 @@ typedef struct {
 }IP_PORT_S;
 
 U16 IP_CheckSum(void *iphdr, U32 iphdr_len);
+U16 IP_Fast_Cksum(const U16 *pusWord);
 IP_HEAD_S * IP_GetIPHeader(IN UCHAR *pucData, IN UINT uiDataLen, IN NET_PKT_TYPE_E enPktType);
 BOOL_T IP_IsExistInIpArry(IN IP_MASK_S *pstIpMask, IN UINT uiNum, IN UINT uiIP, IN UINT uiMask);
 BOOL_T IP_IsPrivateIp(UINT ip);
-char * IP_NToP4(const struct in_addr *addr, char *buf, socklen_t len);
+char * IP_NToP4(const struct in_addr *addr, char *buf, int len);
 void IP_BuildHeader(IP_HEAD_S *iphdr, U8 proto, U32 sip, U32 dip, U16 total_len);
 
 #ifdef __cplusplus

@@ -90,7 +90,6 @@ static char * _tm_os_asctime(char *buf, int bufsz, const struct tm *tm)
 
 
 
-
 VOID TM_Utc2String(IN time_t ulUtcTime, OUT CHAR *szStringTime)
 {
     struct tm stTm;
@@ -115,6 +114,16 @@ BS_STATUS TM_String2Utc(IN CHAR *pszStringTime, OUT time_t *pulUtcTime)
     }
 
     return BS_OK;
+}
+
+
+VOID TM_Utc2GmTm(IN time_t ulUtcTime, OUT struct tm *pstTm)
+{
+#ifdef IN_WINDOWS
+    gmtime_s(pstTm, &ulUtcTime);
+#else
+    gmtime_r(&ulUtcTime, pstTm);
+#endif
 }
 
 

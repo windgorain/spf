@@ -12,8 +12,7 @@
     extern "C" {
 #endif 
 
-typedef enum
-{
+typedef enum {
     SYS_OS_VER_OTHER,
     SYS_OS_VER_WIN_OLD,  
     SYS_OS_VER_WIN2000,
@@ -23,6 +22,8 @@ typedef enum
     SYS_OS_VER_WIN7,
     SYS_OS_VER_WIN8,
     SYS_OS_VER_WIN8_1,
+    SYS_OS_VER_WIN10,
+    SYS_OS_VER_WIN11,
 
     SYS_OS_VER_WIN_LATTER 
 }SYS_OS_VER_E;
@@ -42,7 +43,10 @@ CHAR * SYS_GetSelfFileName(void);
 
 CHAR * SYS_GetSelfFilePath(void);
 
-BS_STATUS SYS_SetSelfStart(IN CHAR *pcRegName, IN BOOL_T bSelfStart, IN char *arg);
+BS_STATUS SYS_SetStartSelf(char *reg_name, BOOL_T start, char *arg);
+
+BS_STATUS SYS_SetStartFile(char *reg_name, char *filepath, char *workpath, BOOL_T start, char *arg);
+
 void ShowCmdWin(int show);
 
 #ifdef __cplusplus

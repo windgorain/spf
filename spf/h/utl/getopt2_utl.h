@@ -20,6 +20,11 @@ typedef struct {
     UINT max;
 }GETOPT2_NUM_RANGE_S;
 
+typedef struct {
+    U64 number;
+    U8  prefix;
+}GETOPT2_NUM_PREFIX_S;
+
 
 enum {
     
@@ -38,10 +43,11 @@ enum {
     GETOPT2_V_IP_PREFIX = 256,    
     GETOPT2_V_IP_PORT,            
     GETOPT2_V_IP_PROTOCOL,        
+    GETOPT2_V_HEX,                
+    GETOPT2_V_HEX_PREFIX,         
 };
 
-typedef struct
-{
+typedef struct {
     char opt_type;    
     char opt_short_name; 
     char *opt_long_name; 
@@ -58,6 +64,7 @@ char * GETOPT2_BuildHelpinfo(GETOPT2_NODE_S *nodes, OUT char *buf, int buf_size)
 int GETOPT2_IsOptSetted(GETOPT2_NODE_S *nodes, char short_opt_name, char *long_opt_name);
 GETOPT2_NODE_S * GETOPT2_IsMustErr(GETOPT2_NODE_S *opts);
 void GETOPT2_PrintHelp(GETOPT2_NODE_S *opts);
+void GETOPT2_Help(GETOPT2_NODE_S *opts);
 
 #ifdef __cplusplus
     }

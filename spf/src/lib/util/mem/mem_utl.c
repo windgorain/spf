@@ -118,7 +118,8 @@ void * MEM_CaseFind(void *pMem, UINT ulMemLen, void *pMemToFind, UINT ulMemToFin
     return NULL;
 }
 
-int MEM_CaseCmp(UCHAR *pucMem1, UINT uiMem1Len, UCHAR *pucMem2, UINT uiMem2Len)
+
+int MEM_CaseCmp(void *pucMem1, UINT uiMem1Len, void *pucMem2, UINT uiMem2Len)
 {
     int c1;
     int c2;
@@ -448,14 +449,14 @@ int MEM_MoveDataTo(void *data, U64 len, void *dst)
     return MEM_MoveData(data, len, (S64)dst - (S64)data);
 }
 
-void MEM_CopyWithCheck(void *dst, void *src, U32 len)
+void MEM_CopyWithCheck(void *dst, const void *src, U32 len)
 {
     
     {
         char *d1_min = dst;
         char *d1_max = (d1_min + len) - 1;
-        char *d2_min = src;
-        char *d2_max = (d2_min + len) - 1;
+        const char *d2_min = src;
+        const char *d2_max = (d2_min + len) - 1;
         if (NUM_AREA_IS_OVERLAP(d1_min, d1_max, d2_min, d2_max) != FALSE) {
             BS_DBGASSERT(0);
         }

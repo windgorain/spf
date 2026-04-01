@@ -23,14 +23,12 @@ typedef HANDLE FIB_HANDLE;
 #define FIB_FLAG_STATIC     0x4      
 #define FIB_FLAG_AUTO_IF        0x8      
 
-typedef struct
-{
+typedef struct {
     UINT uiDstOrStartIp; 
     UINT uiMaskOrEndIp;  
 }FIB_KEY_S;
 
-typedef struct
-{
+typedef struct {
     FIB_KEY_S stFibKey;
     UINT uiNextHop;      
     UINT uiOutIfIndex;
@@ -48,14 +46,9 @@ BS_STATUS FIB_Add(IN FIB_HANDLE hFibHandle, IN FIB_NODE_S *pstFibNode);
 VOID FIB_Del(IN FIB_HANDLE hFibHandle, IN FIB_NODE_S *pstFibNode);
 VOID FIB_DelAll(IN FIB_HANDLE hFibHandle);
 BS_STATUS FIB_Find(IN FIB_HANDLE hFibHandle, IN UINT ip, IN UINT mask);
-BS_STATUS FIB_PrefixMatch(IN FIB_HANDLE hFibHandle, IN UINT uiDstIp , OUT FIB_NODE_S *pstFibNode);
+BS_STATUS FIB_Match(IN FIB_HANDLE hFibHandle, IN UINT uiDstIp , OUT FIB_NODE_S *pstFibNode);
 VOID FIB_Walk(IN FIB_HANDLE hFibHandle, IN PF_FIB_WALK_FUNC pfWalkFunc, IN HANDLE hUserHandle);
-BS_STATUS FIB_GetNext
-(
-    IN FIB_HANDLE hFibHandle,
-    IN FIB_NODE_S *pstFibCurrent,
-    OUT FIB_NODE_S *pstFibNext
-);
+int FIB_GetNext(FIB_HANDLE hfib, FIB_NODE_S *curr, OUT FIB_NODE_S *pstFibNext);
 BS_STATUS FIB_Show (IN FIB_HANDLE hFibHandle);
 CHAR * FIB_GetFlagString(IN UINT uiFlag, OUT CHAR *pcFlagString);
 

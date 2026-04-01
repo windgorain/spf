@@ -16,24 +16,22 @@
 
 #define TASK_WORKER_ID_AUTO 0xffffffff 
 
-typedef HANDLE TASK_WORKER_HANDLE;
+typedef struct tag_TASK_WORKER_CTRL_S * TASK_WORKER_HANDLE;
 
 typedef VOID (*PF_TASK_WORKER_FUNC)(void *ud);
 
 TASK_WORKER_HANDLE TASK_Worker_Create(char *name_prefix, UINT worker_num, UINT time);
-BS_STATUS TASK_Worker_SetEvent
-(
-    IN TASK_WORKER_HANDLE hTaskWorker,
-    IN UINT uiEventOffset, 
-    IN PF_TASK_WORKER_FUNC pfFunc,
-    IN USER_HANDLE_S *pstUserHandle
-);
+
+BS_STATUS TASK_Worker_SetEvent(TASK_WORKER_HANDLE hTaskWorker, UINT uiEventOffset, 
+    PF_TASK_WORKER_FUNC pfFunc, USER_HANDLE_S *pstUserHandle);
+
 BS_STATUS TASK_Worker_EventInput
 (
     IN TASK_WORKER_HANDLE hTaskWorker,
     IN UINT uiWokerId,  
     IN UINT uiEventOffset 
 );
+
 BS_STATUS TASK_Worker_MsgInput
 (
     TASK_WORKER_HANDLE hTaskWorker,

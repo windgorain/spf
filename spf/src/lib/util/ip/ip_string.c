@@ -57,16 +57,35 @@ BS_STATUS IPString_ParseIpMask(CHAR *pcIpMaskString, OUT IP_MASK_S *pstIpMask)
 }
 
 
+int IPString_ParseIpList(char *ip_list_string, char split_char, int max_count, OUT U32 *ip_list)
+{
+    char *ip_str;
+    int num = 0;
+
+    TXT_SCAN_ELEMENT_BEGIN(ip_list_string, split_char, ip_str) {
+        if (num >= max_count) {
+            TXT_SCAN_ELEMENT_STOP();
+            return num;
+        }
+
+        IP_PREFIX_S ip_prefix = {0};
+        IPString_ParseIpPrefix(ip_str, &ip_prefix);
+        ip_list[num] = ip_prefix.uiIP;
+
+        num ++;
+    }TXT_SCAN_ELEMENT_END();
+
+    return num;
+}
+
 
 UINT IPString_ParseIpMaskList(IN CHAR *pcIpMaskString, IN CHAR cSplitChar, IN UINT uiIpMaskMaxNum, OUT IP_MASK_S *pstIpMasks)
 {
     CHAR *pcIpMask;
     UINT uiNum = 0;
 
-    TXT_SCAN_ELEMENT_BEGIN(pcIpMaskString, cSplitChar, pcIpMask)
-    {
-        if (uiNum >= uiIpMaskMaxNum)
-        {
+    TXT_SCAN_ELEMENT_BEGIN(pcIpMaskString, cSplitChar, pcIpMask) {
+        if (uiNum >= uiIpMaskMaxNum) {
             TXT_SCAN_ELEMENT_STOP();
             return uiNum;
         }

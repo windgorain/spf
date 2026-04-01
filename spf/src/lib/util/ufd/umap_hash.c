@@ -14,6 +14,7 @@ typedef struct {
     UMAP_HEADER_S hdr; 
     U32 buckets_num;
     HASH_S * hash_tbl;
+    SPINLOCK_S spinlock;
 }UMAP_HASH_S;
 
 typedef struct {
@@ -126,7 +127,7 @@ static void * _umap_hash_lookup_elem(void *map, const void *key)
     return found->value;
 }
 
-static long _umap_hash_delete_elem(void *map, const void *key)
+static long _umap_hash_delete_elem_locked(void *map, const void *key)
 {
     UMAP_HASH_S *ctrl = map;
     UMAP_HASH_NODE_S *old;
@@ -143,7 +144,18 @@ static long _umap_hash_delete_elem(void *map, const void *key)
     return 0;
 }
 
-static long _umap_hash_update_elem(void *map, const void *key, const void *value, U32 flag)
+static long _umap_hash_delete_elem(void *map, const void *key)
+{
+    UMAP_HASH_S *ctrl = map;
+
+    SpinLock_Lock(&ctrl->spinlock);
+    long ret = _umap_hash_delete_elem_locked(map, key);
+    SpinLock_UnLock(&ctrl->spinlock);
+
+    return ret;
+}
+
+static long _umap_hash_update_elem_locked(void *map, const void *key, const void *value, U32 flag)
 {
     UMAP_HASH_S *ctrl = map;
     UMAP_HASH_NODE_S *node;
@@ -187,6 +199,17 @@ static long _umap_hash_update_elem(void *map, const void *key, const void *value
     return 0;
 }
 
+static long _umap_hash_update_elem(void *map, const void *key, const void *value, U32 flag)
+{
+    UMAP_HASH_S *ctrl = map;
+
+    SpinLock_Lock(&ctrl->spinlock);
+    long ret = _umap_hash_update_elem_locked(map, key, value, flag);
+    SpinLock_UnLock(&ctrl->spinlock);
+
+    return ret;
+}
+
 
 static int _umap_hash_getnext_key(void *map, void *key, OUT void *next_key)
 {
@@ -205,7 +228,7 @@ static int _umap_hash_getnext_key(void *map, void *key, OUT void *next_key)
         tmp = &node;
     }
 
-    found = (void*)HASH_GetNextDict(ctrl->hash_tbl, _umap_hash_cmp, (void*)tmp, NULL);
+    found = (void*)HASH_DictGetNext(ctrl->hash_tbl, _umap_hash_cmp, (void*)tmp, NULL);
     if (! found) {
         return -1;
     }

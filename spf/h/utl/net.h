@@ -42,6 +42,24 @@ static inline UINT PREFIX_2_MASK(IN UCHAR ucPrefixLen)
 }
 
 
+static inline UINT PREFIX_2_NETORDER_MASK(IN UCHAR ucPrefixLen)
+{
+    UINT mask = PREFIX_2_MASK(ucPrefixLen);
+    return htonl(mask);
+}
+
+
+static inline U64 PREFIX_2_MASK64(IN UCHAR ucPrefixLen)
+{
+    
+    if (ucPrefixLen == 64) {
+        return (U64)(-1LL);
+    }
+
+    return ~(((U64)(-1LL)) >> ucPrefixLen);
+}
+
+
 static inline UINT PREFIX_2_CAPACITY(IN UCHAR ucPrefixLen)
 {
 	return 1 << (32 - ucPrefixLen);
@@ -175,15 +193,6 @@ static inline UINT IP_GetCommonPrefix(IN UINT uiIP1, IN UINT uiIP2)
 
 #define IP_SPLIT_SUBNET_BY_MASK_END() } _uiBeginTmp = _uiNetEndTmp + 1; }} while(0)
 
-typedef struct {
-    UCHAR aucMac[6];
-}MAC_ADDR_S;
-
-typedef union {
-    MAC_ADDR_S stMacAddr;
-    USHORT ausMacAddr[3];
-}MAC_ADDR_U;
-
 typedef union {
     UCHAR aucIp[4];
     UINT uiIp;
@@ -203,8 +212,7 @@ typedef union {
 #define IN6ADDR_SIZE32   4
 
 typedef struct net_in6_addr {
-    union
-    {
+    union {
         unsigned char   __u6_addr8[IN6ADDR_SIZE8];
         unsigned short  __u6_addr16[IN6ADDR_SIZE16];
         unsigned int    __u6_addr32[IN6ADDR_SIZE32];
@@ -215,13 +223,11 @@ typedef struct net_in6_addr {
     #define net_s6_addr32 __u6_addr.__u6_addr32
 }IN6ADDR_S;
 
-typedef struct
-{
+typedef struct {
     UINT S_addr;
 }INADDR_S;
 
-typedef enum
-{
+typedef enum {
     NET_PKT_TYPE_ETH = 0,
     NET_PKT_TYPE_IP,
     NET_PKT_TYPE_IP6,

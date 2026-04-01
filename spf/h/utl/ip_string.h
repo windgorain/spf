@@ -17,9 +17,8 @@
 
 
 BS_STATUS IPString_ParseIpMask(IN CHAR *pcIpMaskString, OUT IP_MASK_S *pstIpMask);
-
-
 UINT IPString_ParseIpMaskList(IN CHAR *pcIpMaskString, IN CHAR cSplitChar, IN UINT uiIpMaskMaxNum, OUT IP_MASK_S *pstIpMasks);
+int IPString_ParseIpList(char *ip_list_string, char split_char, int max_count, OUT U32 *ip_list);
 CHAR * IPString_IP2String(IN UINT ip, OUT CHAR *str);
 CHAR * IPString_IPHeader2String(IN VOID *ippkt, OUT CHAR *info, IN UINT infosize);
 CHAR * IPString_IPHeader2Hex(IN VOID *ippkt, OUT CHAR *info);

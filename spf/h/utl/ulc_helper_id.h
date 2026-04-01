@@ -1,8 +1,8 @@
-/******************************************************************
-*   Created by LiXingang
-*   Description: 
-*
-******************************************************************/
+/******************************************************************************
+* Copyright (C), Xingang.Li
+* Author:      Xingang.Li  Version: 1.0
+* Description:
+******************************************************************************/
 #ifndef _ULC_HELPER_ID_H
 #define _ULC_HELPER_ID_H
 #ifdef __cplusplus
@@ -46,6 +46,9 @@ enum {
     ULC_ID_FSCANF,
     ULC_ID_TMPFILE,
     ULC_ID_TMPNAM,
+    ULC_ID_OPEN,
+    ULC_ID_READ,
+    ULC_ID_PRINTFX,
 
     ULC_ID_STAT = 1000100,
     ULC_ID_ACCESS,
@@ -88,7 +91,8 @@ enum {
     ULC_ID_ERRNO = 1000402,
     ULC_ID_SETJMP,
     ULC_ID_LONGJMP,
-    
+    ULC_ID_SET_ERRNO,
+
     ULC_ID_INIT_TIMER = 1000410,
     ULC_ID_ADD_TIMER,
     ULC_ID_DEL_TIMER,

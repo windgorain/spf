@@ -42,13 +42,21 @@
 #define MBUF_SET_NEXT_MBUF(pstMbuf,_pstNextMbuf)  ((pstMbuf)->pstNextMbuf = (VOID*)(_pstNextMbuf))
 #define MBUF_GET_MBUF_TYPE(pstMbuf)              ((pstMbuf)->ucType)
 
+
 #define MBUF_SCAN_DATABLOCK_BEGIN(_pstMbuf,_pucData,_ulDataLen)  \
     do {    \
         MBUF_MBLK_S *_pstMblk;  \
-        DLL_SCAN (&_pstMbuf->stMblkHead, _pstMblk)   \
-        {   \
+        DLL_SCAN (&_pstMbuf->stMblkHead, _pstMblk) {   \
             _pucData = _pstMblk->pucData;    \
-            _ulDataLen = _pstMblk->ulLen;   \
+            _ulDataLen = _pstMblk->ulLen; \
+            {
+
+
+#define MBUF_SCAN_DATABLOCK_EXT_BEGIN(_pstMbuf,_pstMblk,_pucData,_ulDataLen)  \
+    do {    \
+        DLL_SCAN (&_pstMbuf->stMblkHead, _pstMblk) {   \
+            _pucData = _pstMblk->pucData;    \
+            _ulDataLen = _pstMblk->ulLen; \
             {
 
 #define MBUF_SCAN_END()  \
@@ -57,12 +65,9 @@
 
 #define MBUF_CAT_EXT(pstDstMbuf,pstSrcMbuf)  \
     do{ \
-        if ((pstDstMbuf) == NULL) \
-        {   \
+        if ((pstDstMbuf) == NULL) {   \
             (pstDstMbuf) = (pstSrcMbuf);    \
-        }   \
-        else    \
-        {   \
+        } else {   \
             MBUF_NeatCat(pstDstMbuf, pstSrcMbuf);	\
         }   \
     }while(0);
@@ -176,16 +181,13 @@ typedef struct
 #define IP_PKT_FILLTAG              0x00000200   
 
 
-typedef union tagPacketInfo
-{
-    struct tagIpTcpUdpPort
-    {
+typedef union tagPacketInfo {
+    struct tagIpTcpUdpPort {
         USHORT usSourcePort;
         USHORT usDestinationPort;
     }stTcpUdpPort;
 
-    struct tagIcmpInfo
-    {
+    struct tagIcmpInfo {
         UCHAR ucIcmpType;
         UCHAR ucIcmpCode;
         USHORT usIcmpID;
@@ -193,8 +195,7 @@ typedef union tagPacketInfo
 }MBUF_PACKET_INFO_U;
 
 
-typedef struct tagMBufIpHdr        
-{
+typedef struct tagMBufIpHdr {
     UINT uiSrcIp;              
     UINT uiDstIp;              
     UINT uiNextHop;            
@@ -212,8 +213,7 @@ typedef struct tagMBufIpHdr
 #endif
 
 #if 1   
-typedef struct tag_MbufVrf
-{
+typedef struct tag_MbufVrf {
     VRF_INDEX vrfIndexRawIn;
     VRF_INDEX vrfIndexIn;
     VRF_INDEX vrfIndexOut;
@@ -238,11 +238,15 @@ typedef struct
     union {
         MBUF_IP_HDR_S stIpHdr;
     }unL3Hdr;
-    
+
+    union {
+        UCHAR ucL3Type;                 
+        UCHAR ucPriority;               
+    } unL3Type;
+
 }MBUF_TAG_S;
 
-typedef struct structMBUF_S
-{
+typedef struct structMBUF_S {
     struct structMbuf_s *pstNextMbuf;
     DLL_HEAD_S          stMblkHead;
     UINT                ulTotalDataLen;
@@ -279,12 +283,9 @@ typedef struct tagMBufQueue
 #define MBUF_QUE_PUSH(_pstMbufQue, _pstMbuf)    \
     do {    \
         MBUF_SET_NEXT_MBUF(_pstMbuf, NULL);     \
-        if ((_pstMbufQue)->pstTailMBuf == NULL)     \
-        {   \
+        if ((_pstMbufQue)->pstTailMBuf == NULL)  {   \
             (_pstMbufQue)->pstHeadMBuf = (_pstMbuf);    \
-        }   \
-        else    \
-        {   \
+        } else {   \
             MBUF_SET_NEXT_MBUF((_pstMbufQue)->pstTailMBuf, _pstMbuf);   \
         }   \
         (_pstMbufQue)->pstTailMBuf = (_pstMbuf);    \
@@ -294,11 +295,9 @@ typedef struct tagMBufQueue
 #define MBUF_QUE_POP(_pstMBufQue, _pstMBuf)\
     do{ \
         (_pstMBuf) = (_pstMBufQue)->pstHeadMBuf;    \
-        if((_pstMBufQue)->pstHeadMBuf != NULL)  \
-        {   \
+        if((_pstMBufQue)->pstHeadMBuf != NULL) {   \
             (_pstMBufQue)->pstHeadMBuf = MBUF_GET_NEXT_MBUF((_pstMBufQue)->pstHeadMBuf);    \
-            if((_pstMBufQue)->pstHeadMBuf == NULL)  \
-            {   \
+            if((_pstMBufQue)->pstHeadMBuf == NULL) {   \
                 (_pstMBufQue)->pstTailMBuf = NULL;  \
             }   \
             (_pstMBufQue)->uiCurrentLength--;  \
@@ -308,12 +307,10 @@ typedef struct tagMBufQueue
 #define MBUF_QUE_PEEK(_pstMBufQue) ((_pstMBufQue)->pstHeadMBuf)
 
 #define MBUF_QUE_FREE_ALL(_pstMBufQue)  \
-    for(;;)   \
-    {   \
+    for(;;)  {   \
         MBUF_S * _pstMbuf;  \
         MBUF_QUE_POP(_pstMBufQue, _pstMbuf);    \
-        if (_pstMbuf == NULL)   \
-        {   \
+        if (_pstMbuf == NULL)  {   \
             break;  \
         }   \
         MBUF_Free(_pstMbuf);    \
@@ -328,6 +325,7 @@ typedef struct structMBUF_ITOR_S
 extern MBUF_CLUSTER_S * MBUF_CreateCluster(void);
 extern VOID MBUF_FreeCluster(IN MBUF_CLUSTER_S *pstCluster);
 extern MBUF_S * MBUF_Create (IN UCHAR ucType, IN UINT ulHeadSpaceLen);
+MBUF_S * MBUF_CreateLen(U8 ucType, U32 head_space, U32 data_len);
 extern VOID MBUF_Free (IN MBUF_S *pstMbuf);
 
 extern BS_STATUS _MBUF_Compress (IN MBUF_S *pstMbuf);
@@ -344,7 +342,7 @@ extern MBUF_S * MBUF_Fragment (IN MBUF_S *pstMbuf, IN UINT ulLen);
 extern MBUF_S * MBUF_CreateByCopyBuf
 (
     IN UINT ulReserveHeadSpace,
-    IN void *pBuf,
+    IN const void *pBuf,
     IN UINT ulLen,
     IN UCHAR ucType
 );
@@ -433,15 +431,23 @@ static inline BS_STATUS MBUF_NeatCat (IN MBUF_S *pstMbufDst, IN MBUF_S *pstMbufS
     return BS_OK;
 }
 
-static inline VOID * MBUF_MTOD (IN MBUF_S *pstMbuf)
+
+static inline void * MBUF_MTOD (const MBUF_S *pstMbuf)
 {
-    MBUF_MBLK_S *pstMblk;
-    
     BS_DBGASSERT (NULL != pstMbuf);
-
-    pstMblk = (MBUF_MBLK_S *)DLL_FIRST (&pstMbuf->stMblkHead);
-
+    const MBUF_MBLK_S *pstMblk = (MBUF_MBLK_S *)DLL_FIRST (&pstMbuf->stMblkHead);
     return ((pstMblk == NULL) ? NULL : pstMblk->pucData);
+}
+
+
+static inline void * MBUF_MTOD_OFFSET (const MBUF_S *pstMbuf, U32 offset)
+{
+    if (MBUF_TOTAL_DATA_LEN(pstMbuf) <= offset) { return NULL; }
+
+    void *d = MBUF_MTOD(pstMbuf);
+    if (! d) { return NULL; }
+
+    return d + offset;
 }
 
 static inline BS_STATUS MBUF_AddTailData(INOUT MBUF_S *pstMbuf, IN UCHAR *pucData, IN UINT uiDataLen)
@@ -532,10 +538,24 @@ static inline VOID MBUF_SET_DESTMAC(IN MBUF_S * pstMBuf,IN UCHAR* pucDstMac)
 #endif
 
 #if 1   
+
 static inline UINT MBUF_GET_IP_PKTTYPE (IN MBUF_S *pstMBuf)
 {
     return pstMBuf->stTag.unL3Hdr.stIpHdr.uiIpPktType;
 }
+
+
+static inline VOID MBUF_SET_L3TYPE (OUT MBUF_S *pstMBuf, IN UCHAR ucNetType)
+{
+    pstMBuf->stTag.unL3Type.ucL3Type = ucNetType;
+    return;
+}
+
+static inline UCHAR MBUF_GET_L3TYPE (IN const MBUF_S *pstMBuf)
+{
+    return (pstMBuf->stTag.unL3Type.ucL3Type);
+}
+
 #endif
 
 #if 1   
@@ -574,6 +594,13 @@ static inline VOID MBUF_SET_OUTVPNID (IN MBUF_S *pstMBuf, IN VRF_INDEX vrfIndexO
 static inline VRF_INDEX MBUF_GET_OUTVPNID (IN MBUF_S *pstMBuf)
 {
     return (pstMBuf->stTag.stVrf.vrfIndexOut);
+}
+
+static inline MBUF_S * MBUF_QUE_DEQUEUE(IN MBUF_QUE_S *pstMBufQueue)
+{
+    MBUF_S *m;
+    MBUF_QUE_POP(pstMBufQueue, m);
+    return m;
 }
 #endif
 

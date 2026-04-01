@@ -74,17 +74,14 @@ static inline VOID STQ_AddHead(IN STQ_HEAD_S* pstList, IN STQ_NODE_S* pstNode)
     return;
 }
 
-
 static inline STQ_NODE_S* STQ_DelHead(STQ_HEAD_S* pstList)
 {
     STQ_NODE_S* pstNode = pstList->pstFirst;
 
-    if (NULL != pstNode)
-    {
+    if (NULL != pstNode) {
         pstList->pstFirst = pstNode->pstNext;
     }
-    if (NULL == pstList->pstFirst)
-    {
+    if (NULL == pstList->pstFirst) {
         pstList->pstLast = (STQ_NODE_S *)NULL;
     }
 
@@ -126,7 +123,6 @@ static inline VOID STQ_AddAfter(IN STQ_HEAD_S* pstList,
     }
     return;
 }
-
 
 static inline STQ_NODE_S* STQ_DelAfter(IN STQ_HEAD_S* pstList,
                                        IN STQ_NODE_S* pstPrev)
@@ -197,7 +193,6 @@ static inline STQ_NODE_S* STQ_DelAfter(IN STQ_HEAD_S* pstList,
           NULL != (pstEntry); \
           (VOID)({(pstPrevEntry) = (pstEntry); \
                    (pstEntry) = STQ_ENTRY_NEXT(pstEntry, member);}))
-
 
 static inline VOID STQ_Del(IN STQ_HEAD_S* pstList, IN const STQ_NODE_S* pstNode)
 {

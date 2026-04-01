@@ -69,32 +69,16 @@ typedef enum tagPkiSigAlgorithm
 typedef struct tagPkiDomainConfigure
 {    
     CHAR szCertFileName[PKI_CERT_FILENAME_MAX + 1];          
-    CHAR szCertSubjectName[PKI_CERT_COMMON_NAME_MAX + 1];          
-    CHAR szCertIssuerName[PKI_CERT_COMMON_NAME_MAX + 1];          
-    CHAR szBasicConstraints[PKI_CERT_BASIC_CONSTRAINTS_MAX + 1];
+    char szDomainName[PKI_CERT_COMMON_NAME_MAX + 1];               
     CHAR szPassword[PKI_KEY_PASSWORD_LENGTH_MAX + 1];
     CHAR szFriendlyname[PKI_CERT_FRIENDLY_NAME_MAX + 1];
     UINT uiSerialNumber;                                
     UINT uiValidity;                                     
-    UINT uiSigAlgorithm;                                 
-    PKI_HASH_ALGMETHOD_E enHash;                         
-    UINT uiModulus;                                      
-    UINT uiKeyUsage;                                     
-    UINT uiCertVersion;                                  
-    UINT uiNidCert;
-    UINT uiNidKey;
-    UINT uiMacIter;
-    UINT uiDefaultIterCount;
+    BOOL_T use_ecc;    
 }PKI_DOMAIN_CONFIGURE_S;
 
 VOID PKI_InitDftConfig(OUT PKI_DOMAIN_CONFIGURE_S *pstConf);
-
-ULONG PKI_GetSelfSignCertAndKey
-(
-    IN PKI_DOMAIN_CONFIGURE_S *pstPkiDomainConf, 
-    OUT X509 **ppstX509Cert, 
-    OUT EVP_PKEY **ppstEvpPkey
-);
+int PKI_GetSelfSignCertAndKey(PKI_DOMAIN_CONFIGURE_S *cfg, OUT X509 **ppstX509Cert, OUT EVP_PKEY **ppstEvpPkey);
 
 void * PKI_LoadCertByPemFile(char *file, pem_password_cb *cb, void *u);
 void * PKI_LoadCertByAsn1File(char *file);

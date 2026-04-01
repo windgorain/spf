@@ -20,8 +20,7 @@
 
 
 
-typedef struct
-{
+typedef struct {
     DLL_NODE_S stDllNode;
     UINT ulTick;        
     UINT uiTriggerTick; 
@@ -30,8 +29,7 @@ typedef struct
     USER_HANDLE_S stUserHandle;
 }VCLOCK_NODE_S;
 
-typedef struct
-{
+typedef struct {
     UINT create_lock:1;
     MUTEX_S lock;
     UINT ulNodeCount;
@@ -60,6 +58,7 @@ int VCLOCK_AddTimer
     USER_HANDLE_S *pstUserHandle
 );
 BS_STATUS VCLOCK_DelTimer(VCLOCK_INSTANCE_HANDLE hVClockInstanceId, VCLOCK_NODE_S *vclock_node);
+void VCLOCK_SetCallBackFunc(VCLOCK_NODE_S *vclock_node, PF_TIME_OUT_FUNC pfFunc, USER_HANDLE_S *ud);
 
 BOOL_T VCLOCK_IsRunning(VCLOCK_NODE_S *vclock_node);
 

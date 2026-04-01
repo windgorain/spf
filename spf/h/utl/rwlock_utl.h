@@ -17,8 +17,7 @@
 
 #ifdef IN_WINDOWS
 
-typedef struct
-{
+typedef struct {
     SPINLOCK_S stSpinLock;
     volatile UINT uiReaderCount;
     volatile UINT uiWriterCount;
@@ -38,8 +37,7 @@ VOID RWLOCK_WriteUnLock(IN RWLOCK_S *pstLock);
 
 #ifdef IN_UNIXLIKE
 
-typedef struct
-{
+typedef struct {
     pthread_rwlock_t stRwLock;
 }RWLOCK_S;
 

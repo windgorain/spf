@@ -27,8 +27,20 @@
 #define TCPS_FIN_WAIT_2    9    
 #define TCPS_TIME_WAIT    10    
 
-#define TCP_HEAD_LEN(pstTcpHead) ((((pstTcpHead)->ucHeadLenAndOther & 0xf0) >> 4) << 2)
+#define TCP_HEAD_LEN(pstTcpHead) (((pstTcpHead)->ucHeadLenAndOther & 0xf0) >> 2)
 #define TCP_SET_HEAD_LEN(pstTcpHead, len) ((pstTcpHead)->ucHeadLenAndOther |= (((len) >> 2) << 4))
+
+#ifndef TH_FLAGS
+#define    TH_FIN    0x01
+#define    TH_SYN    0x02
+#define    TH_RST    0x04
+#define    TH_PUSH    0x08
+#define    TH_ACK    0x10
+#define    TH_URG    0x20
+#define    TH_ECE    0x40
+#define    TH_CWR    0x80
+#define    TH_FLAGS    (TH_FIN|TH_SYN|TH_RST|TH_PUSH|TH_ACK|TH_URG|TH_ECE|TH_CWR)
+#endif
 
 #define    TCP_FLAG_FIN    0x01
 #define    TCP_FLAG_SYN    0x02
@@ -66,8 +78,7 @@
 
 #pragma pack(1)
 
-typedef struct tagTCP_HEAD_S
-{
+typedef struct tagTCP_HEAD_S {
 	USHORT usSrcPort;		
 	USHORT usDstPort; 		
 	UINT  ulSequence;
@@ -91,8 +102,19 @@ typedef struct {
     UINT   timestamp_echo;
 }TCP_OPT_INFO_S;
 
+typedef struct {
+    U8 kind;
+}TCP_OPT_S;
 
-U16 TCP_CheckSum(void *tcphdr, U32 tcp_len, void *pucSrcIp, void *pucDstIp);
+typedef struct {
+    U8 kind;
+    U8 len;
+    U8 send_time[4];
+    U8 echo_time[4];
+}TCP_TIME_OPT_S;
+
+
+U16 TCP_CheckSum(void *tcphdr, U32 tcp_len, U32 sip, U32 dip);
 TCP_HEAD_S * TCP_GetTcpHeader(IN UCHAR *pucData, IN UINT uiDataLen, IN NET_PKT_TYPE_E enPktType);
 CHAR * TCP_Header2String(IN VOID *tcp, OUT CHAR *info, IN UINT infosize);
 CHAR * TCP_Header2Hex(IN VOID *tcp, OUT CHAR *hex);
@@ -102,6 +124,7 @@ char * TCP_GetFlagsString(IN UCHAR ucFlags, char *info);
 UINT TCP_String2Flag(char *str);
 int TCP_LoadIPFile(void *sip_monitor);
 char * TCP_GetStatusString(int state);
+void TCP_BuildHeader(OUT void *buf, U32 src_ip, U32 dst_ip, U16 src_port, U16 dst_port, U8 tcp_flag, U32 seq, U32 ack);
 
 
 static inline BOOL_T TCP_IsHeaderEnough(TCP_HEAD_S *tcp_head, int len)

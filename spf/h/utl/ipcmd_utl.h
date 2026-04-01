@@ -16,6 +16,7 @@ BS_STATUS IPCMD_AddDns(char *ifname, UINT dnsip, UINT index);
 BS_STATUS IPCMD_DelDns(char *ifname, UINT dnsip);
 BS_STATUS IPCMD_SetDns(char *ifname, UINT dnsip);
 BS_STATUS IPCMD_SetMtu(char *ifname, UINT mtu);
+BS_STATUS IPCMD_LinkUpDown(char *ifname, int up);
 
 
 #ifdef __cplusplus

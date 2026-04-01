@@ -116,19 +116,22 @@ static inline int _vbuf_pre_cat(IN VBUF_S *pstVBuf, U64 ulLen)
 {
     U64 ulTailLen;
 
+    
     ulTailLen = (pstVBuf->ulTotleLen - pstVBuf->ulOffset) - pstVBuf->ulUsedLen;
 
     if (ulTailLen >= ulLen) {
+        
         return 0;
     }
 
     if (pstVBuf->ulUsedLen + ulLen <= pstVBuf->ulTotleLen) {
+        
         return _vbuf_move_data(pstVBuf, 0);
     }
 
+    
     return _vbuf_resize_up_to(pstVBuf, pstVBuf->ulUsedLen + ulLen);
 }
-
 
 static inline void VBUF_Init(OUT VBUF_S *pstVBuf)
 {
@@ -139,6 +142,7 @@ static inline void VBUF_Finit(IN VBUF_S *pstVBuf)
 {
     if (pstVBuf->pucData) {
         MEM_Free(pstVBuf->pucData);
+        pstVBuf->pucData = NULL;
         Mem_Zero(pstVBuf, sizeof(VBUF_S));
     }
 }
@@ -164,6 +168,12 @@ static inline void * VBUF_GetData(IN VBUF_S *pstVBuf)
 {
     BS_DBGASSERT(pstVBuf != 0);
     return pstVBuf->pucData + pstVBuf->ulOffset;
+}
+
+static inline void * VBUF_GetDataEnd(IN VBUF_S *pstVBuf)
+{
+    void *data = VBUF_GetData(pstVBuf);
+    return data + pstVBuf->ulUsedLen;
 }
 
 static inline void * VBUF_GetTailFreeBuf(IN VBUF_S *pstVBuf)
@@ -192,6 +202,11 @@ static inline void VBUF_FromM(OUT VBUF_S *vbuf, INOUT LLDATA_S *m)
     m->len = 0;
 }
 
+static inline U64 VBUF_GetTotalLength(VBUF_S *v)
+{
+    return v->ulTotleLen;
+}
+
 
 static inline U64 VBUF_GetHeadFreeLength(IN VBUF_S *pstVBuf)
 {
@@ -205,7 +220,8 @@ static inline U64 VBUF_GetTailFreeLength(IN VBUF_S *pstVBuf)
     return (pstVBuf->ulTotleLen - pstVBuf->ulOffset) - pstVBuf->ulUsedLen;
 }
 
-static inline int VBUF_CpyBuf(IN VBUF_S *pstVBuf, IN void *buf, IN ULONG ulLen)
+
+static inline int VBUF_CpyBuf(OUT VBUF_S *pstVBuf, IN void *buf, IN ULONG ulLen)
 {
     BS_DBGASSERT(0 != pstVBuf);
 
@@ -250,6 +266,16 @@ static inline int VBUF_CatBuf(INOUT VBUF_S *pstVBuf, IN VOID *buf, IN ULONG ulLe
     pstVBuf->ulUsedLen += ulLen;
 
     return BS_OK;
+}
+
+static inline int VBUF_CpyString(INOUT VBUF_S *pstVBuf, char *buf)
+{
+    return VBUF_CpyBuf(pstVBuf, buf, strlen(buf));
+}
+
+static inline int VBUF_CatString(INOUT VBUF_S *pstVBuf, char *buf)
+{
+    return VBUF_CatBuf(pstVBuf, buf, strlen(buf));
 }
 
 

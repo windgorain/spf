@@ -31,6 +31,85 @@ extern "C" {
 #define fwrite(a,b,c,d) ulc_sys_fwrite(a,b,c,d)
 #define getc(a) ulc_sys_getc(a)
 #define stat(a,b) ulc_sys_stat(a,b)
+#undef stdin
+#define  stdin ((void*)0)
+#undef stdout
+#define  stdout ((void*)1)
+#undef stderr 
+#define stderr ((void*)2)
+
+#ifdef IN_ULC_BARE
+#define _ULC_DEF_FMT(fmt) char _fmt[] = (fmt)
+#else
+#define _ULC_DEF_FMT(fmt) char *_fmt = (fmt)
+#endif
+
+#define fprintf(fp,fmt, ...) ({ \
+    _ULC_DEF_FMT(fmt); \
+    int _count = BS_ARG_COUNT(__VA_ARGS__); \
+    U64 _d[10]; \
+    long _ret = -1; \
+    switch (_count) { \
+        case 10: _d[9]=(unsigned long long)BS_ARG_GET(10, ##__VA_ARGS__); \
+        case 9: _d[8]=(unsigned long long)BS_ARG_GET(9, ##__VA_ARGS__); \
+        case 8: _d[7]=(unsigned long long)BS_ARG_GET(8, ##__VA_ARGS__); \
+        case 7: _d[6]=(unsigned long long)BS_ARG_GET(7, ##__VA_ARGS__); \
+        case 6: _d[5]=(unsigned long long)BS_ARG_GET(6, ##__VA_ARGS__); \
+        case 5: _d[4]=(unsigned long long)BS_ARG_GET(5, ##__VA_ARGS__); \
+        case 4: _d[3]=(unsigned long long)BS_ARG_GET(4, ##__VA_ARGS__); \
+        case 3: _d[2]=(unsigned long long)BS_ARG_GET(3, ##__VA_ARGS__); \
+        case 2: _d[1]=(unsigned long long)BS_ARG_GET(2, ##__VA_ARGS__); \
+        case 1: _d[0]=(unsigned long long)BS_ARG_GET(1, ##__VA_ARGS__); \
+        case 0: break; \
+    } \
+    if (_count <= 10) { _ret = ulc_sys_fprintf(fp,_fmt,_d,_count);} \
+    _ret; \
+})
+
+#define fscanf(fp,fmt, ...) ({ \
+    _ULC_DEF_FMT(fmt); \
+    int _count = BS_ARG_COUNT(__VA_ARGS__); \
+    U64 _d[10]; \
+    long _ret = -1; \
+    switch (_count) { \
+        case 10: _d[9]=(unsigned long long)BS_ARG_GET(10, ##__VA_ARGS__); \
+        case 9: _d[8]=(unsigned long long)BS_ARG_GET(9, ##__VA_ARGS__); \
+        case 8: _d[7]=(unsigned long long)BS_ARG_GET(8, ##__VA_ARGS__); \
+        case 7: _d[6]=(unsigned long long)BS_ARG_GET(7, ##__VA_ARGS__); \
+        case 6: _d[5]=(unsigned long long)BS_ARG_GET(6, ##__VA_ARGS__); \
+        case 5: _d[4]=(unsigned long long)BS_ARG_GET(5, ##__VA_ARGS__); \
+        case 4: _d[3]=(unsigned long long)BS_ARG_GET(4, ##__VA_ARGS__); \
+        case 3: _d[2]=(unsigned long long)BS_ARG_GET(3, ##__VA_ARGS__); \
+        case 2: _d[1]=(unsigned long long)BS_ARG_GET(2, ##__VA_ARGS__); \
+        case 1: _d[0]=(unsigned long long)BS_ARG_GET(1, ##__VA_ARGS__); \
+        case 0: break; \
+    } \
+    if (_count <= 10) { _ret = ulc_sys_fscanf(fp,_fmt,_d,_count);} \
+    _ret; \
+})
+
+#define SPF_Printf(fmt, ...) ({ \
+    _ULC_DEF_FMT(fmt); \
+    int _count = BS_ARG_COUNT(__VA_ARGS__); \
+    U64 _d[10]; \
+    long _ret = -1; \
+    switch (_count) { \
+        case 10: _d[9]=(unsigned long long)BS_ARG_GET(10, ##__VA_ARGS__); \
+        case 9: _d[8]=(unsigned long long)BS_ARG_GET(9, ##__VA_ARGS__); \
+        case 8: _d[7]=(unsigned long long)BS_ARG_GET(8, ##__VA_ARGS__); \
+        case 7: _d[6]=(unsigned long long)BS_ARG_GET(7, ##__VA_ARGS__); \
+        case 6: _d[5]=(unsigned long long)BS_ARG_GET(6, ##__VA_ARGS__); \
+        case 5: _d[4]=(unsigned long long)BS_ARG_GET(5, ##__VA_ARGS__); \
+        case 4: _d[3]=(unsigned long long)BS_ARG_GET(4, ##__VA_ARGS__); \
+        case 3: _d[2]=(unsigned long long)BS_ARG_GET(3, ##__VA_ARGS__); \
+        case 2: _d[1]=(unsigned long long)BS_ARG_GET(2, ##__VA_ARGS__); \
+        case 1: _d[0]=(unsigned long long)BS_ARG_GET(1, ##__VA_ARGS__); \
+        case 0: break; \
+    } \
+    if (_count <= 4) { _ret = ulc_sys_printf(_fmt, ##__VA_ARGS__);} \
+    else if (_count <= 10) { _ret = ulc_sys_printfx(_fmt,_d,_count);} \
+    _ret; \
+})
 
 #define time(a) ulc_sys_time(a)
 
@@ -109,6 +188,49 @@ extern "C" {
 #define mprotect(a,b,c) ulc_mmap_mprotect(a,b,c)
 
 #define sched_getcpu() bpf_get_smp_processor_id()
+
+
+
+#define SPF_SDIV(_a, _b) ({ \
+        BOOL_T _aneg = (_a) < 0; \
+        BOOL_T _bneg = (_b) < 0; \
+        U64 _adiv = _aneg ? -(_a) : (_a); \
+        U64 _bdiv = _bneg ? -(_b) : (_b); \
+        U64 _out = _adiv / _bdiv; \
+        (S64) (_aneg != _bneg ? -_out : _out); \
+        })
+
+
+#define SPF_SMOD(_a, _b) ({ \
+        BOOL_T _aneg = (_a) < 0; \
+        BOOL_T _bneg = (_b) < 0; \
+        U64 _adiv = _aneg ? -(_a) : (_a); \
+        U64 _bdiv = _bneg ? -(_b) : (_b); \
+        U64 _out = _adiv % _bdiv; \
+        (S64) (_aneg != _bneg ? -_out : _out); \
+        })
+
+
+#define SPF_SPOW(_a, _b) ({ \
+        U64 _r = 1; \
+        U64 _base = (_a); \
+        if ((_b) < 0) { \
+            _r = 0; \
+        } else { \
+            for (int _i=0; _i<(_b); _i++) { \
+                _r *= _base; \
+            } \
+        } \
+        _r; \
+    })
+
+
+static inline long SPF_FABS(long a)
+{
+    if (a >= 0) return a;
+    return -a;
+}
+
 
 #endif
 

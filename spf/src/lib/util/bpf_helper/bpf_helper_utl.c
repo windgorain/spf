@@ -14,8 +14,8 @@
 #include "utl/mmap_utl.h"
 #include "utl/get_cpu.h"
 #include "utl/ulc_helper_id.h"
-#include <setjmp.h>
 #include <locale.h>
+#include <setjmp.h>
 
 #undef IN_ULC_USER
 
@@ -29,7 +29,7 @@ static long _ulc_ret_1(void)
     return 1;
 }
 
-static long _ulc_ret_negative_1(void)
+static long _ulc_ret_n1(void)
 {
     return -1;
 }
@@ -188,6 +188,24 @@ static void ulc_sys_clearerr(void *fp)
     return clearerr(fp);
 }
 
+static int ulc_sys_printfx(char *fmt, U64 *d, int count)
+{
+    switch (count) {
+        case 0: return printf("%s",fmt);
+        case 1: return printf(fmt,d[0]);
+        case 2: return printf(fmt,d[0],d[1]);
+        case 3: return printf(fmt,d[0],d[1],d[2]);
+        case 4: return printf(fmt,d[0],d[1],d[2],d[3]);
+        case 5: return printf(fmt,d[0],d[1],d[2],d[3],d[4]);
+        case 6: return printf(fmt,d[0],d[1],d[2],d[3],d[4],d[5]);
+        case 7: return printf(fmt,d[0],d[1],d[2],d[3],d[4],d[5],d[6]);
+        case 8: return printf(fmt,d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7]);
+        case 9: return printf(fmt,d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]);
+        case 10: return printf(fmt,d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8],d[9]);
+        default: return -1;
+    }
+}
+
 static int ulc_sys_fprintf(void *fp, char *fmt, U64 *d, int count)
 {
     fp = _ulc_fp_2_process(fp);
@@ -279,7 +297,7 @@ static size_t ulc_sys_fwrite(const void *ptr, size_t size, size_t nmemb, void *f
     return fwrite(ptr, size, nmemb, fp);
 }
 
-int ulc_sys_fputs(const char *str, void *fp)
+static int ulc_sys_fputs(const char *str, void *fp)
 {
     fp = _ulc_fp_2_process(fp);
     return fputs(str, fp);
@@ -319,6 +337,11 @@ static char * ulc_sys_tmpnam(char *str)
 
     
     return strcpy(str ? str : internal, s);
+}
+
+static int ulc_sys_open(const char *pathname, int flags)
+{
+    return open(pathname, flags);
 }
 
 static void * g_bpf_runtime_ctrl = NULL; 
@@ -385,20 +408,136 @@ static void * ulc_mmap_map(void *addr, U64 len, U64 flag, int fd, U64 off)
     return mmap(addr, len, prot, flags, fd, off);
 }
 
-static int ulc_sys_get_errno()
+static void ulc_mmap_unmap(void *start, int length)
+{
+    munmap(start, length);
+}
+
+static int ulc_sys_get_errno(void)
 {
     return errno;
 }
 
-static int ulc_sys_setjmp(void *env)
+static void ulc_sys_set_errno(int err)
 {
-    return setjmp(env);
+    errno = err;
 }
 
-static void ulc_sys_longjmp(void *env, int val)
-{
-    longjmp(env, val);
-}
+int ulc_sys_setjmp(void *env);
+void ulc_sys_longjmp(void *env, int val);
+
+#ifdef __x86_64__
+asm (
+"   .text\n"
+"   .align 4\n"
+#ifdef IN_MAC
+"   .globl  _ulc_sys_setjmp\n"
+" _ulc_sys_setjmp:"
+#else
+"   .type   ulc_sys_setjmp, @function\n"
+"   .globl  ulc_sys_setjmp\n"
+" ulc_sys_setjmp:"
+#endif
+"   pop  %rsi\n"            
+"   xorl %eax,%eax\n"       
+"   movq %rbx,(%rdi)\n"
+"   movq %rsp,8(%rdi)\n"    
+"   push %rsi\n"            
+"   movq %rbp,16(%rdi)\n"
+"   movq %r12,24(%rdi)\n"
+"   movq %r13,32(%rdi)\n"
+"   movq %r14,40(%rdi)\n"
+"   movq %r15,48(%rdi)\n"
+"   movq %rsi,56(%rdi)\n"   
+"   ret\n"
+#ifndef IN_MAC
+"	.size		ulc_sys_setjmp, .-ulc_sys_setjmp\n"
+#endif
+);
+
+asm (
+"   .text\n"
+"   .align 4\n"
+#ifdef IN_MAC
+"   .globl _ulc_sys_longjmp\n"
+" _ulc_sys_longjmp:"
+#else
+"   .type ulc_sys_longjmp, @function\n"
+"   .globl ulc_sys_longjmp\n"
+" ulc_sys_longjmp:"
+#endif
+"   movl %esi,%eax\n"   
+"   movq (%rdi),%rbx\n"
+"   movq 8(%rdi),%rsp\n"
+"   movq 16(%rdi),%rbp\n"
+"   movq 24(%rdi),%r12\n"
+"   movq 32(%rdi),%r13\n"
+"   movq 40(%rdi),%r14\n"
+"   movq 48(%rdi),%r15\n"
+"   jmp *56(%rdi)\n"
+#ifndef IN_MAC
+"	.size		ulc_sys_longjmp, .-ulc_sys_longjmp\n"
+#endif
+);
+#endif
+
+#ifdef __aarch64__
+asm (
+"   .text\n"
+"   .balign 8\n"
+#ifdef IN_MAC
+"   .globl  _ulc_sys_setjmp\n"
+" _ulc_sys_setjmp:"
+#else
+"   .type   ulc_sys_setjmp, @function\n"
+"   .globl  ulc_sys_setjmp\n"
+" ulc_sys_setjmp:"
+#endif
+"   mov	x1, sp\n"
+"   stp	x18, x19, [x0, #0]\n"
+"   stp	x20, x21, [x0, #16]\n"
+"   stp	x22, x23, [x0, #32]\n"
+"   stp	x24, x25, [x0, #48]\n"
+"   stp	x26, x27, [x0, #64]\n"
+"   stp	x28, x29, [x0, #80]\n"
+"   stp	x30, x1,  [x0, #96]\n"
+"   mov	x0, #0\n" 			
+"   br	x30\n"
+#ifndef IN_MAC
+"	.size		ulc_sys_setjmp, .-ulc_sys_setjmp\n"
+#endif
+);
+
+asm (
+"   .text\n"
+"   .balign 8\n"
+#ifdef IN_MAC
+"   .globl _ulc_sys_longjmp\n"
+" _ulc_sys_longjmp:"
+#else
+"   .type ulc_sys_longjmp, @function\n"
+"   .globl ulc_sys_longjmp\n"
+" ulc_sys_longjmp:"
+#endif
+"   ldp	x18, x19, [x0, #0]\n"
+"   ldp	x20, x21, [x0, #16]\n"
+"   ldp	x22, x23, [x0, #32]\n"
+"   ldp	x24, x25, [x0, #48]\n"
+"   ldp	x26, x27, [x0, #64]\n"
+"   ldp	x28, x29, [x0, #80]\n"
+"   ldp	x30, x2,  [x0, #96]\n"
+"   mov	sp, x2\n"
+"   mov	x0, x1\n"
+"   cbnz	x1, 1f\n"
+"   mov	x0, #1\n"
+" 1:"
+"   br	x30\n"
+#ifndef IN_MAC
+"	.size		ulc_sys_longjmp, .-ulc_sys_longjmp\n"
+#endif
+);
+#endif
+
 
 static int ulc_init_timer(void *timer_node, void *timeout_func, int node_size)
 {
@@ -464,6 +603,7 @@ static const void * g_bpf_sys_helpers[BPF_SYS_HELPER_COUNT] = {
     [_(ULC_ID_COPY_TO_USER)] = ulc_sys_copy_to_user,
 
     [_(ULC_ID_PRINTF)] = printf,
+    [_(ULC_ID_PRINTFX)] = ulc_sys_printfx,
     [_(ULC_ID_PUTS)] = ulc_sys_puts,
     [_(ULC_ID_SPRINTF)] = _sprintf,
     [_(ULC_ID_GETC)] = ulc_sys_getc,
@@ -488,16 +628,18 @@ static const void * g_bpf_sys_helpers[BPF_SYS_HELPER_COUNT] = {
     [_(ULC_ID_FSCANF)] = ulc_sys_fscanf,
     [_(ULC_ID_TMPFILE)] = tmpfile,
     [_(ULC_ID_TMPNAM)] = ulc_sys_tmpnam,
+    [_(ULC_ID_OPEN)] = ulc_sys_open,
+    [_(ULC_ID_READ)] = read,
 
     [_(ULC_ID_STAT)] = stat,
     [_(ULC_ID_ACCESS)] = access,
-    [_(ULC_ID_TIME)] = time,
     [_(ULC_ID_LOCALECONV)] = localeconv,
     [_(ULC_ID_SETLOCALE)] = setlocale,
     [_(ULC_ID_USLEEP)] = ulc_sys_usleep,
     [_(ULC_ID_EXIT)] = exit,
     [_(ULC_ID_GETENV)] = getenv,
     [_(ULC_ID_CLOCK)] = clock,
+    [_(ULC_ID_TIME)] = time,
     [_(ULC_ID_GMTIME)] = gmtime,
     [_(ULC_ID_LOCALTIME)] = localtime,
     [_(ULC_ID_STRFTIME)] = strftime,
@@ -527,15 +669,23 @@ static const void * g_bpf_sys_helpers[BPF_SYS_HELPER_COUNT] = {
     [_(ULC_ID_RCU_BARRIER)] = RcuEngine_Barrier,
 
     [_(ULC_ID_ERRNO)] = ulc_sys_get_errno,
+    [_(ULC_ID_SET_ERRNO)] = ulc_sys_set_errno,
+
+    
+#ifdef __aarch64__
     [_(ULC_ID_SETJMP)] = ulc_sys_setjmp,
     [_(ULC_ID_LONGJMP)] = ulc_sys_longjmp,
+#else
+    [_(ULC_ID_SETJMP)] = setjmp,
+    [_(ULC_ID_LONGJMP)] = longjmp,
+#endif
 
     [_(ULC_ID_INIT_TIMER)] = ulc_init_timer,
     [_(ULC_ID_ADD_TIMER)] = ulc_add_timer,
     [_(ULC_ID_DEL_TIMER)] = ulc_del_timer,
 
     [_(ULC_ID_MMAP_MAP)] = ulc_mmap_map,
-    [_(ULC_ID_MMAP_UNMAP)] = munmap,
+    [_(ULC_ID_MMAP_UNMAP)] = ulc_mmap_unmap,
     [_(ULC_ID_MMAP_MPROTECT)] = mprotect,
 
     [_(ULC_ID_GET_SYM)] = ulc_sys_get_sym,
@@ -613,7 +763,7 @@ int ulc_set_helper(U32 id, void *func)
     } else if (func == (void*)(long)1) {
         func = _ulc_ret_1;
     } else if (func == (void*)(long)-1) {
-        func = _ulc_ret_negative_1;
+        func = _ulc_ret_n1;
     }
 
     if (id < BPF_BASE_HELPER_END) {

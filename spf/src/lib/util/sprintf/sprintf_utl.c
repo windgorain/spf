@@ -6,6 +6,7 @@
 ******************************************************************************/
 #include "bs.h"
 
+#include "utl/endian_utl.h"
 #include "utl/txt_utl.h"
 #include "utl/num_utl.h"
 #include "utl/rand_utl.h"
@@ -152,7 +153,7 @@ static char *put_dec_full(char *buf, unsigned q)
 	return buf;
 }
 
-static inline char *put_dec(char *buf, unsigned long num)
+static inline char *put_dec(char *buf, unsigned long long num)
 {
 	while (1) {
 		unsigned rem;
@@ -445,7 +446,7 @@ static char *number(char *buf, char *end, unsigned long long num, struct printf_
 			num >>= shift;
 		} while (num);
 	} else { 
-		i = (INT) (put_dec(tmp, (ULONG)num) - tmp);
+		i = (INT) (put_dec(tmp, num) - tmp);
 	}
 
 	
@@ -544,9 +545,11 @@ static char * ip4_string(char *p, const UCHAR *addr, const char *fmt)
 #if BS_BIG_ENDIAN
 		index = 0;
 		step = 1;
-#else
+#elif BS_LITTLE_ENDIAN
 		index = 3;
 		step = -1;
+#else
+    #error "Error"
 #endif
 		break;
 	case 'l':
@@ -952,7 +955,7 @@ int BS_FormatN(FormatCompile_S *fc, char *buf, int size, ...)
 }
 
 
-INT BS_Vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+int BS_Vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	unsigned long long num;
 	char *str, *end;
@@ -1110,7 +1113,6 @@ INT BS_Vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	return str-buf;
 
 }
-
 
 INT BS_Sprintf(char * buf, const char *fmt, ...)
 {

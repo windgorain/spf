@@ -14,6 +14,7 @@
     extern "C" {
 #endif 
 
+
 #define TXT_STRING_ARRAY(_x, _v) _x[] = _v; _x[sizeof(_v) - 1] = '\0'
 
 
@@ -128,9 +129,11 @@ extern BS_STATUS TXT_XAtoui(IN CHAR *pszBuf, OUT UINT *pulNum);
 extern long TXT_Strtol(char *str, int base);
 
 extern CHAR TXT_Random(void);
+extern char TXT_RandomSpec(char *specs);
 extern void TXT_StringRandom(OUT char *string, int len);
+void TXT_StringRandomSpec(char *specs, OUT char *string, int string_len);
 extern void TXT_ReplaceChar(INOUT char *pcTxtBuf, char from, char to);
-extern VOID TXT_ReplaceSubStr(IN CHAR *pcTxtBuf, IN CHAR *pcSubStrFrom, IN CHAR *pcSubStrTo, OUT CHAR *pcTxtOutBuf, IN ULONG ulSize);
+extern void TXT_ReplaceSubStr(char *pcTxtBuf, char *pcSubStrFrom, char *pcSubStrTo, OUT char *pcTxtOutBuf, U32 size);
 
 extern VOID TXT_ReplaceSubStrOnce
 (

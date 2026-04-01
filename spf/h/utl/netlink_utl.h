@@ -5,31 +5,11 @@
 ================================================================*/
 #ifndef _NETLINK_UTL_H
 #define _NETLINK_UTL_H
-#include <linux/netlink.h>
-#include <linux/genetlink.h>
+#include "netlink_def.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#define NETLINK_GEN_NAME "my_nl_gen"
-
-enum{  
-    NETLINK_GEN_C_UNSPEC,  
-    NETLINK_GEN_C_CMD,
-
-    NETLINK_GEN_C_MAX
-};  
-
-typedef struct netlink_msg_st {
-    struct nlmsghdr hdr;
-    struct genlmsghdr g;  
-    int msg_type;
-    int data_len;
-    int reply_size; 
-    void *reply_ptr;
-    char data[0];
-}NETLINK_MSG_S;
 
 typedef struct {
     int nl_fd;

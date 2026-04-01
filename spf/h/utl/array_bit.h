@@ -13,29 +13,57 @@
 #endif 
 
 #define ARRAYBIT_SCAN_FREE_BEGIN(_data, _bit_size, _index)  do { \
-    INT64 _i, _j; \
-    INT64 _uint_num = NUM_UP_ALIGN(bit_size, 32)/32; \
-    for (_i=0; _i<_uint_num; _i++) { \
-        if (_data[_i] == 0xffffffff) \
+    INT64 _i, _j; U32 *_d = (void*)_data; \
+    INT64 _u32_num = NUM_UP_ALIGN(bit_size, 32)/32; \
+    for (_i=0; _i<_u32_num; _i++) { \
+        if (_d[_i] == 0xffffffff) \
             continue; \
         for (_j=0; _j<32; _j++) { \
-            if (_data[_i] & (1 << _j)) \
+            if (_d[_i] & (1 << _j)) \
                 continue; \
             _index = _i*32 + _j; \
             if (_index >= _bit_size) \
                 break; \
             {
 
+#define ARRAYBIT_SCAN_FREE_BEGIN64(_data, _bit_size, _index)  do { \
+    INT64 _i, _j; U64 *_d = _data; \
+    INT64 _u64_num = NUM_UP_ALIGN(bit_size, 64)/64; \
+    for (_i=0; _i<_u64_num; _i++) { \
+        if (_d[_i] == 0xffffffffffffffffULL) \
+            continue; \
+        for (_j=0; _j<64; _j++) { \
+            if (_d[_i] & (1ULL << _j)) \
+                continue; \
+            _index = _i*64 + _j; \
+            if (_index >= _bit_size) \
+                break; \
+            {
+
 #define ARRAYBIT_SCAN_BUSY_BEGIN(_data, _bit_size, _index)  do { \
-    INT64 _i, _j; \
-    INT64 _uint_num = NUM_UP_ALIGN(_bit_size, 32)/32; \
-    for (_i=0; _i<_uint_num; _i++) { \
-        if (_data[_i] == 0) \
+    INT64 _i, _j; U32 *_d = (void*)_data; \
+    INT64 _u32_num = NUM_UP_ALIGN(_bit_size, 32)/32; \
+    for (_i=0; _i<_u32_num; _i++) { \
+        if (_d[_i] == 0) \
             continue; \
         for (_j=0; _j<32; _j++) { \
-            if ((_data[_i] & (1 << _j)) == 0) \
+            if ((_d[_i] & (1 << _j)) == 0) \
                 continue; \
             _index = _i*32 + _j; \
+            if (_index >= _bit_size) \
+                break; \
+            {
+
+#define ARRAYBIT_SCAN_BUSY_BEGIN64(_data, _bit_size, _index)  do { \
+    INT64 _i, _j; U64 *_d = _data; \
+    INT64 _u64_num = NUM_UP_ALIGN(_bit_size, 64)/64; \
+    for (_i=0; _i<_u64_num; _i++) { \
+        if (_d[_i] == 0) \
+            continue; \
+        for (_j=0; _j<64; _j++) { \
+            if ((_d[_i] & (1ULL << _j)) == 0) \
+                continue; \
+            _index = _i*64 + _j; \
             if (_index >= _bit_size) \
                 break; \
             {

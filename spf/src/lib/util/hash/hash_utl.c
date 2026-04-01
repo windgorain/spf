@@ -24,13 +24,15 @@ static int _hash_cmp_node(PF_CMP_EXT_FUNC pfCmpFunc, HASH_NODE_S *node1, HASH_NO
 
 void HASH_Init(OUT HASH_S *hash, DL_HEAD_S *buckets, U32 bucket_num, PF_HASH_BY_NODE hash_by_node)
 {
+    int i;
+
     BS_DBGASSERT(NUM_IS2N(bucket_num));
 
     hash->mask = bucket_num - 1;
     hash->hash_by_node = hash_by_node;
     hash->pstBuckets = buckets;
 
-    for (int i=0; i<bucket_num; i++) {
+    for (i=0; i<bucket_num; i++) {
         DL_Init(&buckets[i]);
     }
 }
@@ -43,7 +45,7 @@ void HASH_AddWithFactor(HASH_S * hHashId, void *pstNode , UINT hash_factor)
 
     node->hash_factor = hash_factor;
 
-    DL_AddHead(&pstHashCtrl->pstBuckets[ulHashIndex], pstNode);
+    DL_AddHeadRcu(&pstHashCtrl->pstBuckets[ulHashIndex], pstNode);
 
     pstHashCtrl->uiNodeCount ++;
 }
@@ -89,7 +91,7 @@ VOID HASH_DelAll(IN HASH_S * hHashId, IN PF_HASH_FREE_FUNC pfFreeFunc, IN VOID *
 }
 
 
-void * HASH_FindWithFactor(HASH_S *hash, U32 hash_factor, PF_CMP_EXT_FUNC cmp_func, void *key, void *ud)
+void * HASH_FindWithFactor(HASH_S *hash, U32 hash_factor, PF_CMP_EXT_FUNC cmp_func, const void *key, void *ud)
 {
     UINT ulHashIndex = hash_factor & hash->mask;
     HASH_NODE_S *node;
@@ -104,7 +106,7 @@ void * HASH_FindWithFactor(HASH_S *hash, U32 hash_factor, PF_CMP_EXT_FUNC cmp_fu
 }
 
 
-void * HASH_FindKey(HASH_S *hash, PF_CMP_EXT_FUNC cmp_func, PF_HASH_BY_KEY hash_by_key, void *key, void *ud)
+void * HASH_FindKey(HASH_S *hash, PF_CMP_EXT_FUNC cmp_func, PF_HASH_BY_KEY hash_by_key, const void *key, void *ud)
 {
     BS_DBGASSERT(NULL != hash);
     U32 hash_factor = hash_by_key(key, ud);
@@ -126,7 +128,7 @@ UINT HASH_Count(IN HASH_S * hHashId)
     return pstHashCtrl->uiNodeCount;
 }
 
-void HASH_Walk(HASH_S * hHashId, PF_HASH_WALK_FUNC pfWalkFunc, void *ud)
+int HASH_Walk(HASH_S * hHashId, PF_HASH_WALK_FUNC pfWalkFunc, void *ud)
 {
     HASH_S *pstHashCtrl;
     DL_NODE_S *pstNodeFind, *pstNodeTmp;
@@ -138,13 +140,14 @@ void HASH_Walk(HASH_S * hHashId, PF_HASH_WALK_FUNC pfWalkFunc, void *ud)
 
     for (i=0; i<=pstHashCtrl->mask; i++) {
         DL_FOREACH_SAFE(&pstHashCtrl->pstBuckets[i], pstNodeFind, pstNodeTmp) {
-            if (pfWalkFunc(hHashId, pstNodeFind, ud) < 0) {
-                return;
+            int ret = pfWalkFunc(hHashId, pstNodeFind, ud);
+            if (ret < 0) {
+                return ret;
             }
         }
     }
 
-    return;
+    return 0;
 }
 
 
@@ -182,7 +185,7 @@ HASH_NODE_S * HASH_GetNext(HASH_S *hash, HASH_NODE_S *curr_node )
 }
 
 
-HASH_NODE_S * HASH_GetNextDict(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_NODE_S *curr_node, void *ud)
+HASH_NODE_S * HASH_DictGetNext(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_NODE_S *curr_node_info, void *ud)
 {
     HASH_S *pstHashCtrl;
     HASH_NODE_S *node;
@@ -195,7 +198,7 @@ HASH_NODE_S * HASH_GetNextDict(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_N
 
     for (i=0; i<=pstHashCtrl->mask; i++) {
         DL_FOREACH_ENTRY(&pstHashCtrl->pstBuckets[i], node, stNode) {
-            if (_hash_cmp_node(pfCmpFunc, curr_node, node, ud) < 0) {
+            if (_hash_cmp_node(pfCmpFunc, curr_node_info, node, ud) < 0) {
                 if (! pstNext) {
                     pstNext = node;
                 } else if (_hash_cmp_node(pfCmpFunc, pstNext, node, ud) > 0) {
@@ -204,6 +207,46 @@ HASH_NODE_S * HASH_GetNextDict(HASH_S * hHash, PF_CMP_EXT_FUNC pfCmpFunc, HASH_N
             }
         }
     }
+
+    return pstNext;
+}
+
+
+
+HASH_NODE_S * HASH_ItorGetNext(HASH_S * hHash, INOUT HASH_ITOR_S *itor)
+{
+    HASH_S *pstHashCtrl;
+    HASH_NODE_S *node;
+    HASH_NODE_S *pstNext = NULL;
+    UINT i;
+
+    BS_DBGASSERT(0 != hHash);
+
+    pstHashCtrl = (HASH_S*)hHash;
+
+    for (i=itor->bucket; i<=pstHashCtrl->mask; i++) {
+
+        
+        DL_FOREACH_ENTRY(&pstHashCtrl->pstBuckets[i], node, stNode) {
+            if (itor->curr < (void*)node) { 
+                
+                if (! pstNext) {
+                    pstNext = node;
+                } else if ((void*)node < (void*)pstNext) {
+                    pstNext = node;
+                }
+            }
+        }
+
+        if (pstNext) {
+            break;
+        }
+
+        itor->curr = NULL; 
+    }
+
+    itor->bucket = i;
+    itor->curr = pstNext;
 
     return pstNext;
 }

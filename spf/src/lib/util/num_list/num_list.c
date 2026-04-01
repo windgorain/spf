@@ -10,6 +10,7 @@
 #include "utl/txt_utl.h"
 #include "utl/lstr_utl.h"
 #include "utl/num_list.h"
+#include "utl/net.h"
 
 
 VOID NumList_Init(IN NUM_LIST_S *pstList)
@@ -21,11 +22,44 @@ VOID NumList_Finit(IN NUM_LIST_S *pstList)
 {
     NUM_LIST_NODE_S *pstNode, *pstNodeTmp;
 
-    DLL_SAFE_SCAN(&pstList->stList, pstNode, pstNodeTmp)
-    {
+    DLL_SAFE_SCAN(&pstList->stList, pstNode, pstNodeTmp) {
         DLL_DEL(&pstList->stList, pstNode);
         MEM_Free(pstNode);
     }
+}
+
+
+int NumList_ParseHexPrefix(LSTR_S *lstr, OUT U64 *number, OUT U8 *prefix)
+{
+    LSTR_S stBegin;
+    LSTR_S stEnd;
+    U64 n;
+    U32 p;
+
+    LSTR_MSplit(lstr, "/", &stBegin, &stEnd);
+
+    LSTR_Strim(&stBegin, " \t\r\n", &stBegin);
+    LSTR_Strim(&stEnd, " \t\r\n", &stEnd);
+    if (stBegin.uiLen == 0) {
+        RETURN(BS_ERR);
+    }
+
+    n = LSTR_Strtoull(&stBegin, 16);
+    p = 64; 
+
+    if (stEnd.uiLen > 0) {
+        p = LSTR_Strtoull(&stEnd, 10);
+        if (p > 64) {
+            p = 64;
+        }
+    }
+
+    U64 mask = PREFIX_2_MASK64(p);
+
+    *number = n & mask;
+    *prefix = p;
+
+    return 0;
 }
 
 

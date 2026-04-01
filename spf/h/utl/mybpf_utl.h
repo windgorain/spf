@@ -5,18 +5,13 @@
 ================================================================*/
 #ifndef _MYBPF_UTL_H
 #define _MYBPF_UTL_H
+
+#include "mybpf_def.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#define MYBPF_NAME_SIZE 32
-#define MYBPF_FILENAME_SIZE 36  
-
-typedef struct {
-    U64 p[5];    
-    U64 bpf_ret; 
-}MYBPF_PARAM_S;
 
 typedef struct {
     int sec_id;        

@@ -27,12 +27,10 @@
 #define INET_ADDR_STR_LEN      INET6_ADDRSTRLEN
 
 
-typedef struct
-{
+typedef struct {
     USHORT   usFamily;             
     USHORT   usReserved;           
-    union
-    {
+    union {
         IN6ADDR_S stIP6Addr;
         INADDR_S  stIP4Addr;
     } un_addr;                      
@@ -165,7 +163,9 @@ static inline INT INET_ADDR_Cmp(IN const INET_ADDR_S *pstAddr1, IN const INET_AD
 BS_STATUS INET_ADDR_Str2IP(IN USHORT usFamily, IN const CHAR *pcStr, OUT INET_ADDR_S *pstAddr);
 BS_STATUS INET_ADDR_N_Str2IP(IN USHORT usFamily, IN const CHAR *pcStr, IN UINT uiStrLen, OUT INET_ADDR_S *pstAddr);
 
+#ifndef IN_WINDOWS
 int inet_pton(int af,const char *src,void *dst);
+#endif
 
 #ifdef __cplusplus
     }

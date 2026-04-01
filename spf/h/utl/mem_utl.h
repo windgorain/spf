@@ -125,7 +125,7 @@ void * MEM_FindOne(void *mem, UINT mem_len, UCHAR to_find);
 
 void * MEM_FindOneOf(void *mem, UINT mem_len, void *to_finds, UINT to_finds_len);
 
-int MEM_CaseCmp(UCHAR *pucMem1, UINT uiMem1Len, UCHAR *pucMem2, UINT uiMem2Len);
+int MEM_CaseCmp(void *pucMem1, UINT uiMem1Len, void *pucMem2, UINT uiMem2Len);
 
 typedef struct
 {
@@ -170,7 +170,7 @@ int MEM_SwapByOff(void *buf, int buf_len, int off);
 int MEM_MoveData(void *data, S64 len, S64 offset);
 int MEM_MoveDataTo(void *data, U64 len, void *dst);
 
-void MEM_CopyWithCheck(void *dst, void *src, U32 len);
+void MEM_CopyWithCheck(void *dst, const void *src, U32 len);
 
 #ifdef __cplusplus
 }

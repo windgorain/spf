@@ -6,7 +6,6 @@
 #ifndef _MYBPF_SPF_DEF_H_
 #define _MYBPF_SPF_DEF_H_
 
-#include "utl/mybpf_loader_def.h"
 #include "utl/mybpf_ioctl_def.h"
 
 #ifdef __cplusplus
@@ -14,9 +13,17 @@ extern "C" {
 #endif
 
 typedef struct {
+    char *instance; 
+    char *filename; 
+    FILE_MEM_S *m;
+    UINT flag;
+    const void **tmp_helpers;
+}MYBPF_LOADER_PARAM_S;
+
+typedef struct {
     int (*finit)(void);
     int (*config_by_file)(char *config_file);
-    int (*load_instance)(MYBPF_LOADER_PARAM_S *p);
+    int (*load_instance)(MYBPF_LOADER_PARAM_S *p, int *maps_fd, int map_count); 
     int (*unload_instance)(char *instance_name);
     void (*unload_all_instance)(void);
     void * (*get_next_prog)(char *instance, char *sec, void *curr);

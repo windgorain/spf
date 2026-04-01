@@ -8,6 +8,7 @@
 
 typedef struct {
     UMAP_HEADER_S hdr; 
+    SPINLOCK_S spinlock;
     UCHAR data[0];
 }UMAP_ARRAY_S;
 
@@ -85,7 +86,9 @@ static long _umap_array_update_elem(void *map, const void *key, const void *valu
 
     old = _umap_array_lookup_elem(map, key);
 
+    SpinLock_Lock(&ctrl->spinlock);
     memcpy(old, value, ctrl->hdr.size_value);
+    SpinLock_UnLock(&ctrl->spinlock);
 
     return 0;
 }

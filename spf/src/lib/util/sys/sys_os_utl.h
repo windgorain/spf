@@ -14,6 +14,7 @@
 
 char * _SYS_OS_GetSelfFileName(void);
 char * _SYS_OS_GetSelfFilePath(void);
+int _SYS_OS_AutoStartFile(char *pcRegName, char *filepath, char *workpath, BOOL_T bSelfStart, char *arg);
 
 #ifdef __cplusplus
     }

@@ -28,7 +28,7 @@
 #define WS_VHOST_MAX_LEN  63
 #define WS_DOMAIN_MAX_LEN 63
 
-typedef VOID* WS_HANDLE;
+typedef struct tagWS_S * WS_HANDLE;
 typedef VOID * WS_CONN_HANDLE;
 typedef VOID * WS_TRANS_HANDLE;
 
@@ -38,17 +38,45 @@ typedef BS_STATUS (*PF_WS_CONN_SET_EVENT)(IN WS_CONN_HANDLE hWsConn, IN UINT uiE
 typedef VOID (*PF_WS_CONN_CLOSE)(IN WS_CONN_HANDLE hWsConn);
 typedef INT (*PF_WS_CONN_READ)(IN WS_CONN_HANDLE hWsConn, OUT UCHAR *pucData, IN UINT uiDataLen);
 typedef INT (*PF_WS_CONN_WRITE)(IN WS_CONN_HANDLE hWsConn, IN UCHAR *pucData, IN UINT uiDataLen);
+typedef int (*PF_WS_CONN_SetTimoutTime)(IN WS_CONN_HANDLE hWsConn, U32 seconds);
 
-typedef struct
-{
+typedef struct {
     PF_WS_CONN_SET_EVENT pfSetEvent;
     PF_WS_CONN_CLOSE pfClose;
     PF_WS_CONN_READ pfRead;
     PF_WS_CONN_WRITE pfWrite;
+    PF_WS_CONN_SetTimoutTime pfSetTimeoutTime;
 }WS_FUNC_TBL_S;
 
 WS_HANDLE WS_Create(IN WS_FUNC_TBL_S *pstFuncTbl);
-VOID WS_Destory(IN WS_HANDLE hWs);
+void WS_SetTimeoutTime(WS_HANDLE ws, U32 seconds );
+void WS_Ref(WS_HANDLE ws);
+void WS_Unref(WS_HANDLE ws);
+
+#endif
+
+#if 1 
+enum {
+    _WS_OB_CLASS_HEADER_PROCESSOR = 0,
+    _WS_OB_CLASS_HANDLER,
+    _WS_OB_CLASS_HEADER_FILTER,
+
+    _WS_OB_CLASS_MAX
+};
+
+typedef enum {
+    WS_EV_RET_CONTINUE = 0, 
+    WS_EV_RET_BREAK,        
+    WS_EV_RET_STOP,         
+    WS_EV_RET_INHERIT,      
+    WS_EV_RET_ERR
+}WS_EV_RET_E;
+
+typedef WS_EV_RET_E (*PF_WS_EventProcess)(void *pstTrans , U32 uiEvent);
+
+int WS_Event_RegPlug(WS_HANDLE ws, char *ob_name);
+int WS_Event_RegPlugExt(WS_HANDLE ws, char *name, int class, int pri, U32 event, PF_WS_EventProcess func);
+void WS_Event_UnregPlugAll(WS_HANDLE ws);
 #endif
 
 #if 1
@@ -56,6 +84,8 @@ VOID WS_Destory(IN WS_HANDLE hWs);
 #define WS_CONN_EVENT_READ  MYPOLL_EVENT_IN  
 #define WS_CONN_EVENT_WRITE MYPOLL_EVENT_OUT
 #define WS_CONN_EVENT_ERROR MYPOLL_EVENT_ERR
+#define WS_CONN_EVENT_HUP   MYPOLL_EVENT_HUP
+#define WS_CONN_EVENT_AGED  MYPOLL_EVENT_AGED
 
 BS_STATUS WS_Conn_Add(IN WS_HANDLE hWs, IN HANDLE hRawConn, IN USER_HANDLE_S *pstPrivateData);
 VOID WS_Conn_Destory(IN WS_CONN_HANDLE hWsConn);
@@ -69,7 +99,8 @@ USER_HANDLE_S * WS_Conn_GetPrivateData(IN WS_CONN_HANDLE hWsConn);
 #if 1
 typedef VOID* WS_VHOST_HANDLE;
 WS_VHOST_HANDLE WS_VHost_Add(IN WS_HANDLE hWs, IN CHAR *pcVHost);
-VOID WS_VHost_Del(IN WS_VHOST_HANDLE hVHost);
+void WS_VHost_Del(IN WS_VHOST_HANDLE hVHost);
+void WS_VHost_DelAll(WS_HANDLE ws);
 UINT WS_VHost_GetContextCount(IN WS_VHOST_HANDLE hVHost);
 
 WS_VHOST_HANDLE WS_VHost_Find(IN WS_HANDLE hWs, IN CHAR *pcVHost);
@@ -81,14 +112,14 @@ WS_VHOST_HANDLE WS_VHost_Match(IN WS_HANDLE hWs, IN CHAR *pcVHost, IN UINT uiVHo
 
 typedef HANDLE WS_DELIVER_TBL_HANDLE;
 
-typedef enum
-{
-    WS_DELIVER_TYPE_METHOD = 0,
-    WS_DELIVER_TYPE_FILE,
-    WS_DELIVER_TYPE_PATH,
-    WS_DELIVER_TYPE_EXT_NAME,
-    WS_DELIVER_TYPE_REFER_PATH,
-    WS_DELIVER_TYPE_QUERY,
+typedef enum {
+    WS_DELIVER_TYPE_METHOD = 0, 
+    WS_DELIVER_TYPE_FILE, 
+    WS_DELIVER_TYPE_PATH, 
+    WS_DELIVER_TYPE_EXT_NAME, 
+    WS_DELIVER_TYPE_REFER_PATH, 
+    WS_DELIVER_TYPE_QUERY, 
+    WS_DELIVER_TYPE_COOKIE, 
     WS_DELIVER_TYPE_CALL_BACK,  
 }WS_DELIVER_TYPE_E;
 
@@ -96,17 +127,7 @@ typedef enum
 #define WS_DELIVER_FLAG_DELIVER_BODY        0x2   
 #define WS_DELIVER_FLAG_PARSE_BODY_AS_MIME  0x4   
 
-typedef enum
-{
-    WS_EV_RET_CONTINUE = 0, 
-    WS_EV_RET_BREAK,        
-    WS_EV_RET_STOP,         
-    WS_EV_RET_INHERIT,      
-    WS_EV_RET_ERR
-}WS_EV_RET_E;
-
-typedef enum
-{
+typedef enum {
     WS_DELIVER_RET_OK = 0,
     WS_DELIVER_RET_INHERIT,
     WS_DELIVER_RET_ERR
@@ -117,8 +138,7 @@ typedef WS_DELIVER_RET_E (*PF_WS_Deliver_Func)(IN WS_TRANS_HANDLE hTrans, IN UIN
 
 WS_DELIVER_TBL_HANDLE WS_Deliver_Create();
 
-BS_STATUS WS_Deliver_Reg
-(
+BS_STATUS WS_Deliver_Reg (
     IN WS_DELIVER_TBL_HANDLE hDeliverTbl,
     IN UINT uiPriority,
     IN WS_DELIVER_TYPE_E enType,
@@ -139,11 +159,7 @@ typedef VOID* WS_CONTEXT_HANDLE;
 
 WS_CONTEXT_HANDLE WS_Context_Add(IN WS_VHOST_HANDLE hVHost, IN CHAR *pcContext);
 VOID WS_Context_Del(IN WS_CONTEXT_HANDLE hContext);
-WS_CONTEXT_HANDLE WS_Context_Find
-(
-    IN WS_VHOST_HANDLE hVHost,
-    IN CHAR *pcContext
-);
+WS_CONTEXT_HANDLE WS_Context_Find(WS_VHOST_HANDLE hVHost, CHAR *pcContext);
 WS_CONTEXT_HANDLE WS_Context_GetDftContext(IN WS_VHOST_HANDLE hVHost);
 VOID WS_Context_DelAll(IN WS_VHOST_HANDLE hVHost);
 BS_STATUS WS_Context_SetUserData(IN WS_CONTEXT_HANDLE hWsContext, IN VOID *pUserData);
@@ -152,13 +168,7 @@ BS_STATUS WS_Context_SetRootPath(IN WS_CONTEXT_HANDLE hWsContext, IN CHAR *pcPat
 BS_STATUS WS_Context_SetSecRootPath(IN WS_CONTEXT_HANDLE hWsContext, IN CHAR *pcPath);
 CHAR * WS_Context_GetRootPath(IN WS_CONTEXT_HANDLE hWsContext);
 CHAR * WS_Context_GetSecRootPath(IN WS_CONTEXT_HANDLE hWsContext);
-CHAR * WS_Context_File2RootPathFile
-(
-    IN WS_CONTEXT_HANDLE hWsContext,
-    IN CHAR *pcFilePath,
-    OUT CHAR *pcRootPathFile,
-    IN UINT uiRootPathFileSize
-);
+CHAR * WS_Context_File2RootPathFile(WS_CONTEXT_HANDLE hWsContext, CHAR *pcFilePath, OUT CHAR *pcRootPathFile, UINT uiRootPathFileSize);
 BS_STATUS WS_Context_SetIndex(IN WS_CONTEXT_HANDLE hWsContext, IN CHAR *pcIndex);
 CHAR * WS_Context_GetIndex(IN WS_CONTEXT_HANDLE hWsContext);
 WS_VHOST_HANDLE WS_Context_GetVHost(IN WS_CONTEXT_HANDLE hWsContext);
@@ -175,16 +185,16 @@ VOID WS_TransMemPool_Free(IN WS_TRANS_HANDLE hTrans, IN VOID *pMem);
 #endif
 
 #if 1
-#define WS_TRANS_EVENT_CREATE              0x1
-#define WS_TRANS_EVENT_RECV_HEAD_OK        0x2
-#define WS_TRANS_EVENT_RECV_BODY           0x4
-#define WS_TRANS_EVENT_RECV_BODY_OK        0x8
-#define WS_TRANS_EVENT_PRE_BUILD_HEAD      0x10
-#define WS_TRANS_EVENT_SEND_HEAD_OK        0x20
-#define WS_TRANS_EVENT_BUILD_BODY          0x40  
-#define WS_TRANS_EVENT_FORMAT_BODY         0x80  
-#define WS_TRANS_EVENT_SEND_BODY_OK        0x100
-#define WS_TRANS_EVENT_DESTORY             0x200
+#define WS_TRANS_EVENT_CREATE              0x1      
+#define WS_TRANS_EVENT_RECV_HEAD_OK        0x2      
+#define WS_TRANS_EVENT_RECV_BODY           0x4      
+#define WS_TRANS_EVENT_RECV_BODY_OK        0x8      
+#define WS_TRANS_EVENT_PRE_BUILD_HEAD      0x10     
+#define WS_TRANS_EVENT_SEND_HEAD_OK        0x20     
+#define WS_TRANS_EVENT_BUILD_BODY          0x40     
+#define WS_TRANS_EVENT_FORMAT_BODY         0x80     
+#define WS_TRANS_EVENT_SEND_BODY_OK        0x100    
+#define WS_TRANS_EVENT_DESTORY             0x200    
 
 CHAR * WS_Trans_GetRequestFile(IN WS_TRANS_HANDLE hTrans);
 WS_CONTEXT_HANDLE WS_Trans_GetContext(IN WS_TRANS_HANDLE hTrans);
@@ -206,13 +216,11 @@ HTTP_HEAD_PARSER WS_Trans_GetHttpRequestParser(IN WS_TRANS_HANDLE hTrans);
 HTTP_HEAD_PARSER WS_Trans_GetHttpEncap(IN WS_TRANS_HANDLE hTrans);
 MIME_HANDLE WS_Trans_GetQueryMime(IN WS_TRANS_HANDLE hTrans);
 MIME_HANDLE WS_Trans_GetBodyMime(IN WS_TRANS_HANDLE hTrans);
+MIME_HANDLE WS_Trans_GetRequestMime(IN WS_TRANS_HANDLE hTrans);
 MIME_HANDLE WS_Trans_GetCookieMime(IN WS_TRANS_HANDLE hTrans);
 BS_STATUS WS_Trans_AddReplyBody(IN WS_TRANS_HANDLE hTrans, IN MBUF_S *pstMbuf);
 BS_STATUS WS_Trans_AddReplyBodyByBuf(IN WS_TRANS_HANDLE hTrans, IN void *buf, IN UINT uiDataLen);
-static inline BS_STATUS WS_Trans_AddReplyBodyByString(IN WS_TRANS_HANDLE hTrans, IN UCHAR *pcData)
-{
-    return WS_Trans_AddReplyBodyByBuf(hTrans, pcData, strlen((CHAR*)pcData));
-}
+BS_STATUS WS_Trans_AddReplyBodyByString(WS_TRANS_HANDLE hTrans, char *pcData);
 VOID WS_Trans_ReplyBodyFinish(IN WS_TRANS_HANDLE hTrans);
 WS_CONN_HANDLE WS_Trans_GetConn(IN WS_TRANS_HANDLE hTrans);
 #endif

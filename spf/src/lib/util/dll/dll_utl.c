@@ -16,46 +16,36 @@ VOID DLL_Sort(IN DLL_HEAD_S *pstDllHead, IN PF_DLL_CMP_FUNC pfFunc, IN HANDLE hU
     DLL_INIT(&stHead);
     DLL_CAT(&stHead, pstDllHead);
 
-    while (NULL != (pstNode1 = (DLL_NODE_S*)DLL_Get(&stHead)))
-    {
+    while (NULL != (pstNode1 = (DLL_NODE_S*)DLL_Get(&stHead))) {
         bIsInserted = FALSE;
         
-        DLL_SCAN(pstDllHead, pstNode2)
-        {
-            if (pfFunc(pstNode1, pstNode2, hUserHandle) < 0)
-            {
+        DLL_SCAN(pstDllHead, pstNode2) {
+            if (pfFunc(pstNode1, pstNode2, hUserHandle) < 0) {
                 DLL_INSERT_BEFORE(pstDllHead, pstNode1, pstNode2);
                 bIsInserted = TRUE;
                 break;
             }
         }
 
-        if (bIsInserted == FALSE)
-        {        
+        if (bIsInserted == FALSE) {        
             DLL_ADD(pstDllHead, pstNode1);
         }
     }
 }
 
 
-VOID DLL_SortAdd
-(
-    IN DLL_HEAD_S *pstDllHead,
-    IN DLL_NODE_S *pstNewNode,
-    IN PF_DLL_CMP_FUNC pfFunc,
-    IN HANDLE hUserHandle
-)
+void DLL_SortAdd(DLL_HEAD_S *list, DLL_NODE_S *node, PF_DLL_CMP_FUNC pfFunc, HANDLE uh)
 {
     DLL_NODE_S *pstNodeTmp;
     
-    DLL_SCAN(pstDllHead, pstNodeTmp) {
-        if (pfFunc(pstNewNode, pstNodeTmp, hUserHandle) <= 0) {
-            DLL_INSERT_BEFORE(pstDllHead, pstNewNode, pstNodeTmp);
+    DLL_SCAN(list, pstNodeTmp) {
+        if (pfFunc(node, pstNodeTmp, uh) <= 0) {
+            DLL_INSERT_BEFORE(list, node, pstNodeTmp);
             return;
         }
     }
 
-    DLL_ADD(pstDllHead, pstNewNode);
+    DLL_ADD(list, node);
 
     return;
 }
@@ -65,9 +55,8 @@ int DLL_UniqueSortAdd(DLL_HEAD_S *head, DLL_NODE_S *node, PF_DLL_CMP_FUNC cmp_fu
 {
     DLL_NODE_S *pstNodeTmp;
     int cmp_ret;
-    
-    DLL_SCAN(head, pstNodeTmp)
-    {
+
+    DLL_SCAN(head, pstNodeTmp) {
         cmp_ret = cmp_func(node, pstNodeTmp, user_data);
         if (cmp_ret == 0) {
             return -1;
@@ -83,6 +72,7 @@ int DLL_UniqueSortAdd(DLL_HEAD_S *head, DLL_NODE_S *node, PF_DLL_CMP_FUNC cmp_fu
 
     return 0;
 }
+
 
 VOID DLL_Cat (IN DLL_HEAD_S *pstDllHeadDst, IN DLL_HEAD_S *pstDllHeadSrc)
 {

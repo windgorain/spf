@@ -36,7 +36,7 @@ typedef struct {
 INT BS_Printf(const char *fmt, ...);
 INT BS_Sprintf(char * buf, const char *fmt, ...);
 INT BS_Snprintf(char * buf, IN INT iLen, const char *fmt, ...);
-INT BS_Vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int BS_Vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int BS_Scnprintf(char *buf, int size, const char *fmt, ...);
 
 int BS_FormatCompile(FormatCompile_S *fc, char *fmt);
@@ -49,7 +49,7 @@ int BS_FormatN(FormatCompile_S *fc, char *buf, int size, ...);
 
 
 #define SNPRINTF(buf,size, ...) ({ \
-        int _nlen = snprintf((buf), (size), ##__VA_ARGS__); \
+        int _nlen = BS_Snprintf((buf), (size), ##__VA_ARGS__); \
         if (_nlen >= (size)) _nlen = -1; \
         _nlen; })
 
@@ -61,6 +61,12 @@ int BS_FormatN(FormatCompile_S *fc, char *buf, int size, ...);
         if (_nlen < 0) _nlen = 0; \
         _nlen; })
 
+
+#define MY_SnprintfX(buf,size,...) ({ \
+        int _nlen = 0; \
+        if ((int)(size) > 0) _nlen = BS_Snprintf((buf), (size), ##__VA_ARGS__); \
+        if (_nlen < 0) _nlen = 0; \
+        _nlen; })
 
 #ifdef __cplusplus
     }

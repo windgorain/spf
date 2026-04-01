@@ -40,20 +40,8 @@ BS_STATUS WEB_Proxy_ReferInput
     IN WS_TRANS_HANDLE hTrans,
     IN UINT uiEvent
 );
-BS_STATUS WEB_Proxy_AuthAgentInput
-(
-    IN WEB_PROXY_HANDLE hWebProxy,
-    IN WS_TRANS_HANDLE hTrans,
-    IN UINT uiEvent
-);
-BS_STATUS WEB_Proxy_RequestIn
-(
-    IN WEB_PROXY_HANDLE hWebProxy,
-    IN MYPOLL_HANDLE hPoller,
-    IN void *sslctx,
-    IN WS_TRANS_HANDLE hTrans,
-    IN UINT uiEvent
-);
+BS_STATUS WEB_Proxy_AuthAgentInput(WEB_PROXY_HANDLE hWebProxy, WS_TRANS_HANDLE hTrans, UINT uiEvent);
+BS_STATUS WEB_Proxy_RequestIn(WEB_PROXY_HANDLE hWebProxy, MYPOLL_HANDLE hPoller, void *sslctx, WS_TRANS_HANDLE hTrans, UINT uiEvent);
 
 BS_STATUS WEB_Proxy_ParseServerUrl
 (

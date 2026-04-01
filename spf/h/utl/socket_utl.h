@@ -33,16 +33,16 @@
 #define SOCKET_E_AGAIN      -EAGAIN
 #endif
 
-extern int _Socket_Create(int iFamily, UINT ulType, const char *filename, int line);
+extern int _Socket_Create(int family, int type, int protocol, const char *filename, int line);
 extern BS_STATUS Socket_Close(IN INT iSocketId);
 extern int Socket_Connect(IN INT iSocketId, IN UINT ulIp, IN USHORT usPort);
 extern int Socket_Connect2(int fd, UINT ulIp, USHORT usPort);
-extern int Socket_UDPClient(UINT ip, USHORT port);
 extern int Socket_UnixSocketClient(char *path, int type, int flags);
 extern BOOL_T Socket_IsIPv4(IN CHAR *pcIpOrName);
 extern BOOL_T Socket_N_IsIPv4(IN CHAR *pcName, IN UINT uiLen);
-BS_STATUS Socket_SetSockOpt(IN INT iSocketId, IN INT iLevel, IN INT iOpt, IN VOID *pOpt, IN UINT uiOptLen);
+int Socket_SetSockOpt(int sock, int level, int opt, void *data, int opt_len);
 extern BS_STATUS Socket_Ioctl(IN INT iSocketId, INT lCmd, void *argp);
+int Socket_EnablePktInfo(int fd, int on);
 
 extern UINT Socket_Ipsz2IpNetWitchCheck(IN CHAR *pcIP);
 extern UINT Socket_Ipsz2IpNet(char *pcIP);
@@ -55,10 +55,14 @@ extern UINT Socket_NameToIpHost (IN CHAR *szIpOrHostName);
 extern CHAR * Socket_IpToName (IN UINT ulIp);
 CHAR * Socket_Ip2Name(IN UINT ip, OUT char *buf, IN int buf_size);
 
-extern BS_STATUS Socket_GetLocalIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
-extern USHORT Socket_GetHostPort(IN INT iSocketId);
+extern int Socket_GetLocalIpPortNet(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
 
-extern BS_STATUS Socket_GetPeerIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
+extern int Socket_GetLocalIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
+
+extern int Socket_GetPeerIpPortNet(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
+
+extern int Socket_GetPeerIpPort(IN INT iSocketId, OUT UINT *pulIp, OUT USHORT *pusPort);
+extern USHORT Socket_GetHostPort(IN INT iSocketId);
 extern UINT Socket_GetFamily(IN INT iSocketId);
 extern BS_STATUS Socket_Bind(IN INT iSocketId, IN UINT ulIp, IN USHORT usPort);
 
@@ -80,6 +84,8 @@ extern INT Socket_Read(IN INT iSocketId, OUT void *buf, IN UINT uiBufLen, IN UIN
 
 extern int Socket_Read2(int iSocketId, OUT void *buf, UINT uiLen, OUT UINT *puiReadLen, UINT ulFlag);
 
+extern int Socket_Recv2(int iSocketId, OUT void *buf, UINT uiLen, UINT ulFlag);
+
 extern BS_STATUS Socket_SendTo
 (
     IN INT iSocketId,
@@ -88,15 +94,15 @@ extern BS_STATUS Socket_SendTo
     IN UINT ulToIp,
     IN USHORT usToPort
 );
-extern BS_STATUS Socket_RecvFrom
+extern int Socket_RecvFrom
 (
     IN INT iSocketId,
     OUT VOID *pBuf,
     IN UINT ulBufLen,
-    OUT UINT *pulRecvLen,
     OUT UINT *pulFromIp,
     OUT USHORT *pusFromPort
 );
+int Socket_RecvFromExt(int fd, OUT void *buf, int buf_size, OUT U32 *sip, OUT U16 *sport, OUT U32 *dip);
 extern BS_STATUS Socket_SetRecvBufSize(IN INT iSocketId, IN UINT ulBufLen);
 extern BS_STATUS Socket_SetSendBufSize(IN INT iSocketId, IN UINT ulBufLen);
 extern BS_STATUS _Socket_Pair(UINT uiType, OUT INT aiFd[2], const char *filename, int line);
@@ -117,8 +123,8 @@ int _Socket_TcpServer(UINT ip, USHORT port, const char *file, int line);
 int _Socket_UnixServer(char *path, int type, const char *file, int line);
 int _Socket_UnixClient(char *path, int type, int no_block, const char *file, int line);
 
-#define Socket_Create(a,b) _Socket_Create(a,b,__FILE__,__LINE__)
-#define Socket_Pair(a,b) _Socket_Pair(a,b,__FILE__,__LINE__)
+#define Socket_Create(family,type,proto) _Socket_Create(family,type,proto,__FILE__,__LINE__)
+#define Socket_Pair(type,fds) _Socket_Pair(type,fds,__FILE__,__LINE__)
 #define Socket_OpenUdp(ip,port) _Socket_OpenUdp((ip),(port),__FILE__,__LINE__)
 #define Socket_UdpClient(ip,port) _Socket_UdpClient((ip),(port),__FILE__,__LINE__)
 #define Socket_TcpServer(ip,port) _Socket_TcpServer((ip),(port),__FILE__,__LINE__)

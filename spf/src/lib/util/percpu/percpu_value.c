@@ -33,7 +33,9 @@ int PERCPU_Init(OUT PERCPU_VALUE_S *tbl, int value_size)
 
 void PERCPU_Destroy(PERCPU_VALUE_S *tbl)
 {
-    for (int i=0; i<MAX_CPU_NUM; i++) {
+    int i;
+
+    for (i=0; i<MAX_CPU_NUM; i++) {
         if (tbl->values[i]) {
             MEM_KFree((void*)tbl->values[i]);
             tbl->values[i] = NULL;

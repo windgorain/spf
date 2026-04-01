@@ -24,6 +24,7 @@
     #include <conio.h>
     #include <winioctl.h>
     #include <Iphlpapi.h>
+    #include <ws2tcpip.h>
     #include <assert.h>
     #include <signal.h>
     #include <direct.h>
@@ -35,7 +36,7 @@
     #define srandom srand
     #define RANDOM_MAX (RAND_MAX)
 
-    typedef unsigned int socklen_t;
+    typedef int socklen_t;
 
     #ifndef inline
         #define inline __inline

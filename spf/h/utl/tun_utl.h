@@ -7,6 +7,7 @@
 #define __TUN_UTL_H_
 
 #include "utl/net.h"
+#include "utl/eth_def.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -37,6 +38,7 @@ extern "C"
 
 TUN_FD TUN_Open(char *dev_name, int dev_name_size);
 TUN_FD TAP_Open(char *dev_name, int dev_name_size);
+void TUN_NotifyClosing(TUN_FD fd);
 void TUN_Close(TUN_FD fd);
 int TUN_MQUE_Open(INOUT char *dev_name, int dev_name_size, IN int que_num, OUT int *fds);
 int TUN_SetNonblock(TUN_FD fd);
