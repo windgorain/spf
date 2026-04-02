@@ -42,19 +42,22 @@ cd spf
 
 cd build/out/spf
 cp -r ../../../loader/* ./
-cp ../../../example/*.o ./
+cp -r ../../../example/target ./
 
-# 执行示例
-./spfcmd hello_world.o
+# 运行o文件
+./spfcmd target/hello_world.o
+
+# 运行spf文件
 ./spfcmd app/lua5.1.spf -e "print('hello world')"
 
-# 先转换为spf文件再执行
-./spfbuilder convert hello_world.o -o hello_world.spf -j
-./spfcmd hello_world.spf
+# 转换为spf文件
+./spfbuilder convert target/hello_world.o -o target/hello_world.spf -j
 
-# 转换为bare文件执行
-./barebuilder convert hello_world.o -o hello_world.bare
-./bare-cmd hello_world.bare
+# 转换为bare文件
+./barebuilder convert target/hello_world.o -o target/hello_world.bare
+
+# 运行bare文件
+./bare-cmd target/hello_world.bare
 ```
 
 # 编写APP 示例
@@ -63,7 +66,7 @@ cp ../../../example/*.o ./
 ```
 #include "utl/ulc_user.h"
 
-SEC("tcmd/hello_test")
+SEC(".spf.cmd/main")
 int main()
 {
     BPF_Print("Hello world!! \n");
