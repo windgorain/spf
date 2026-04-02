@@ -36,14 +36,20 @@ qemu-system-aarch64 -m 512 -machine virt -cpu cortex-a53 -smp 1 -bios u-boot.bin
 # 加载SPF runtime和 SPF APP
 在uboot命令行下执行：  
 ```
+#设置tftp服务器的地址
 setenv serverip 192.168.64.8   #192.168.64.8是tftp服务的IP地址，需要根据情况修改自己tftp服务的iP
+
+#加载bare文件
 tftp 0x40200000 spf_loader.arm64.bare
 load_loader 0x40200000
 
+#加载spf实例
 tftp 0x40200000 fibonacci.spf
 load_spf test1 0x40200000
 
+#运行spf实例
 test_spf 100000
 
+#卸载spf实例
 unload_spf test1
 ```

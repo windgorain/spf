@@ -15,7 +15,7 @@
 # 使用示例
 ```
 # ./build_mac.sh 或者 ./build_linux.sh
-# 本例以linux上执行为例
+# 以linux上执行为例
 ./build_linux.sh
 
 cd build/out

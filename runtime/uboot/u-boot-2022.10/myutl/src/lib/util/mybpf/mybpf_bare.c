@@ -67,7 +67,7 @@ static int _mybpf_bare_check(MYBPF_BARE_HDR_S *hdr, const void **tmp_helpers)
 static int _mybpf_bare_load(void *data, const void **tmp_helpers, OUT MYBPF_BARE_S *bare)
 {
     MYBPF_BARE_HDR_S *hdr = data;
-    MYBPF_BARE_SUB_HDR_S *shdr = (void*)(hdr + 1);
+    MYBPF_BARE_SUB_HDR_S *shdr = (void*)((char*)hdr + ntohs(hdr->hdr_size));
     void **bss = NULL;
 
     int ret = _mybpf_bare_check(hdr, tmp_helpers);
@@ -83,9 +83,9 @@ static int _mybpf_bare_load(void *data, const void **tmp_helpers, OUT MYBPF_BARE
         }
     }
 
-    int hdr_len = sizeof(*shdr) + (sizeof(int) * ntohs(shdr->depends_count));
-    void *prog_begin = (char*)shdr + hdr_len;
-    int prog_size = ntohl(shdr->sub_size) - hdr_len;
+    int shdr_len = ntohs(shdr->sub_hdr_size) + (sizeof(int) * ntohl(shdr->depends_count));
+    void *prog_begin = (char*)shdr + shdr_len;
+    int prog_size = ntohl(shdr->sub_size) - shdr_len;
 
     void *fn = memdup(prog_begin, prog_size);
     if (! fn) {
