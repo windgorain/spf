@@ -57,7 +57,7 @@ static int _mybpf_bare_check(MYBPF_BARE_HDR_S *hdr, const void **tmp_helpers)
         RETURNI(BS_NOT_MATCHED, "Magic not match");
     }
 
-    if ((! hdr->jit_arch) || (hdr->jit_arch != ARCH_LocalArch())) {
+    if ((! hdr->arch) || (hdr->arch != ARCH_LocalArch())) {
         RETURNI(BS_NOT_SUPPORT, "Jit arch not matched");
     }
 

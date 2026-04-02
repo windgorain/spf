@@ -76,7 +76,7 @@ static int _mybpf_bare_check(MYBPF_BARE_HDR_S *hdr, int mem_len, const void **tm
         RETURNI(BS_WRONG_FILE, "File length not valid");
     }
 
-    if ((! hdr->jit_arch) || (hdr->jit_arch != ARCH_LocalArch())) {
+    if ((! hdr->arch) || (hdr->arch != ARCH_LocalArch())) {
         RETURNI(BS_NOT_SUPPORT, "Jit arch not matched");
     }
 
@@ -86,7 +86,7 @@ static int _mybpf_bare_check(MYBPF_BARE_HDR_S *hdr, int mem_len, const void **tm
 static int _mybpf_bare_load(void *data, int len, const void **tmp_helpers, OUT MYBPF_BARE_S *bare)
 {
     MYBPF_BARE_HDR_S *hdr = data;
-    MYBPF_BARE_SUB_HDR_S *shdr = (void*)(hdr + 1);
+    MYBPF_BARE_SUB_HDR_S *shdr = (void*)((char*)hdr + ntohs(hdr->hdr_size));
     void **bss = NULL;
 
     int ret = _mybpf_bare_check(hdr, len, tmp_helpers);
@@ -102,9 +102,9 @@ static int _mybpf_bare_load(void *data, int len, const void **tmp_helpers, OUT M
         }
     }
 
-    int hdr_len = sizeof(*shdr) + (sizeof(int) * ntohs(shdr->depends_count));
-    void *prog_begin = (char*)shdr + hdr_len;
-    int prog_size = ntohl(shdr->sub_size) - hdr_len;
+    int shdr_len = ntohs(shdr->sub_hdr_size) + (sizeof(int) * ntohl(shdr->depends_count));
+    void *prog_begin = (char*)shdr + shdr_len;
+    int prog_size = ntohl(shdr->sub_size) - shdr_len;
 
     void *fn = mmap(0, prog_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (fn == MAP_FAILED) {
