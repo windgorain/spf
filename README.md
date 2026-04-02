@@ -42,22 +42,24 @@ cd spf
 
 cd build/out/spf
 cp -r ../../../loader/* ./
-cp -r ../../../example/target ./
 
 # 运行o文件
-./spfcmd target/hello_world.o
+./spfcmd ../../../example/target/hello_world.o
 
-# 运行spf文件
+# 运行lua.spf
 ./spfcmd app/lua5.1.spf -e "print('hello world')"
+./spfcmd app/lua5.3.spf -e "print('hello world')"
+./spfcmd app/lua5.4.spf -e "print('hello world')"
 
 # 转换为spf文件
-./spfbuilder convert target/hello_world.o -o target/hello_world.spf -j
+./spfbuilder convert ../../../example/target/hello_world.o -o hello_world.spf -j
+# 运行spf文件
+./spfcmd hello_world.spf
 
 # 转换为bare文件
-./barebuilder convert target/hello_world.o -o target/hello_world.bare
-
+./barebuilder convert ../../../example/target/hello_world.o -o hello_world.bare
 # 运行bare文件
-./bare-cmd target/hello_world.bare
+./bare-cmd hello_world.bare
 ```
 
 # 编写APP 示例
@@ -83,6 +85,8 @@ clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER
 | 名称 | 说明 |
 | --- | --- |
 | lua5.1.spf | 将lua5.1编译成了spf格式文件. 不支持浮点数运算 |
+| lua5.3.spf | 将lua5.3编译成了spf格式文件. 不支持浮点数运算 |
+| lua5.4.spf | 将lua5.4编译成了spf格式文件. 不支持浮点数运算 |
 | loader_cmd.spf | 交互式spf运行时 |
 | nc_server.spf | nc服务器 |
 
