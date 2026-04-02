@@ -160,14 +160,15 @@ static inline void * _ulc_fp_2_process(void *fp)
     return fp;
 }
 
-
-static int _sprintf(OUT char *buf, const char *fmt, ...)
+static int _sprintf(OUT char *buf, const char *fmt, U64 p1, U64 p2, U64 p3)
 {
-    va_list args;
-    va_start(args, fmt);
-    int ret = vsnprintf(buf, 4096, fmt, args);
-    va_end(args);
-    return ret;
+    return snprintf(buf, 4096, fmt, p1, p2, p3);
+}
+
+
+static int ulc_sys_printf(const char *fmt, U64 p1, U64 p2, U64 p3, U64 p4) 
+{
+    return printf(fmt, p1, p2, p3, p4);
 }
 
 static int ulc_sys_fflush(void *fp)
@@ -408,9 +409,9 @@ static void * ulc_mmap_map(void *addr, U64 len, U64 flag, int fd, U64 off)
     return mmap(addr, len, prot, flags, fd, off);
 }
 
-static void ulc_mmap_unmap(void *start, int length)
+static int ulc_mmap_unmap(void *start, int length)
 {
-    munmap(start, length);
+    return munmap(start, length);
 }
 
 static int ulc_sys_get_errno(void)
@@ -602,7 +603,7 @@ static const void * g_bpf_sys_helpers[BPF_SYS_HELPER_COUNT] = {
     [_(ULC_ID_COPY_FROM_USER)] = ulc_sys_copy_from_user,
     [_(ULC_ID_COPY_TO_USER)] = ulc_sys_copy_to_user,
 
-    [_(ULC_ID_PRINTF)] = printf,
+    [_(ULC_ID_PRINTF)] = ulc_sys_printf,
     [_(ULC_ID_PRINTFX)] = ulc_sys_printfx,
     [_(ULC_ID_PUTS)] = ulc_sys_puts,
     [_(ULC_ID_SPRINTF)] = _sprintf,
