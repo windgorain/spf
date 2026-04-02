@@ -21,6 +21,7 @@
 #include "utl/ulc_user_sys.h"
 #include "utl/ulc_user_user.h"
 #include "utl/mybpf_spf_sec.h"
+#include "utl/mybpf_map_def.h"
 
 #ifndef noinline
 #define noinline __attribute__((noinline))

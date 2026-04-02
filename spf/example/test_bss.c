@@ -11,7 +11,7 @@ int main()
 {
     g_count1 ++;
 
-    printf("count1:%d \n", g_count1);
+    BPF_Print("count1:%d \n", g_count1);
 
     return 0;
 }

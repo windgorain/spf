@@ -16,22 +16,22 @@ extern "C" {
 #define MYBPF_BARE_BSS_BLOCK_SIZE 16
 
 typedef struct {
-    U32 sub_size; /* 本段大小, 包含此头部 */
-    U32 utc_sec;
-
-    U16 bss_size; /*MYBPF_BARE_BSS_BLOCK_SIZE 字节元组个数,所以最多MYBPF_BARE_BSS_BLOCK_SIZE* 64k*/
+    U32 sub_size; 
+    U32 utc_sec;  
+    U32 depends_count; 
+    U32 bss_size; 
     U16 app_ver;
-    U16 depends_count;
-    U16 reserved;
+    U16 sub_hdr_size;
+    U8  reserved[12];
 }MYBPF_BARE_SUB_HDR_S;
 
 typedef struct {
     U32 magic;
-    U32 total_size; /* 文件总大小,包含此头部 */
-
+    U32 total_size; 
     U8 ver;
-    U8 jit_arch;
-    U8 resereved[6];
+    U8 arch;
+    U16 hdr_size; 
+    U8 resereved[4];
 }MYBPF_BARE_HDR_S;
 
 typedef struct {

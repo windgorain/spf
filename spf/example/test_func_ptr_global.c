@@ -17,7 +17,7 @@ noinline int test(void)
 
 noinline int test2(void)
 {
-    printf("global func ptr called! \n");
+    BPF_Print("global func ptr called! \n");
     return 0;
 }
 

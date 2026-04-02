@@ -8,7 +8,7 @@
 SEC(".spf.cmd/main")
 int main()
 {
-    printf("Hello world!! \n");
+    BPF_Print("Hello world!! \n");
     return 0;
 }
 

@@ -15,7 +15,7 @@ static noinline void _test(char *c)
 
 static noinline void _output(void)
 {
-    printf("test OK \n");
+    BPF_Print("test OK \n");
 }
 
 SEC(".spf.cmd/main")

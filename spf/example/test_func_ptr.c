@@ -13,7 +13,7 @@ noinline int test(PF_test2 func)
 
 noinline int test2(void)
 {
-    printf("func ptr called! \n");
+    BPF_Print("func ptr called! \n");
     return 0;
 }
 

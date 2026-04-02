@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     long count;
 
     if (argc < 2) {
-        printf("Need params: number \r\n");
+        BPF_Print("Need params: number \r\n");
         return -1;
     }
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     unsigned long long ret = fibonacci(count);
     unsigned long long end = bpf_ktime_get_ns();
 
-    printf("Bpf Use time %llu ms, result:%lld \n", (end - start)/1000000, ret);
+    BPF_Print("Bpf Use time %llu ms, result:%lld \n", (end - start)/1000000, ret);
 
     return 0;
 }

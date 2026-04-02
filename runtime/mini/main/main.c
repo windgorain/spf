@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     int len;
 
     if (argc < 2) {
-        printf("Usage: %s filename\n", argv[0]);
+        printf("Usage: %s bare-file\n", argv[0]);
         return -1;
     }
 
@@ -58,8 +58,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    p.p[0] = argc;
-    p.p[1] = (long)argv;
+    p.p[0] = argc - 1;
+    p.p[1] = (long)(argv + 1);
 
     MYBPF_RunBareMain(data, &p);
 

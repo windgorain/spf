@@ -9,7 +9,7 @@ typedef struct {
 }CFG_S;
 
 
-struct bpf_map_def SEC("maps") g_test_cfg_tbl = {
+MYBPF_MAP_DEF_S SEC("maps") g_test_cfg_tbl = {
     .type = BPF_MAP_TYPE_ARRAY,
     .key_size = sizeof(int),
     .value_size = sizeof(CFG_S),
