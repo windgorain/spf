@@ -19,10 +19,9 @@ The SPF format is more complex than BARE (but simpler than ELF).It supports glob
 
 # Compilation
 cd spf
-There are two build_xxx.sh scripts, each for compilation in different environments.
-
-On macOS:./build_macos.sh
-On Linux:./build_linux.sh
+There are two build_xxx.sh scripts, each for compilation in different environments.  
+On macOS:./build_macos.sh  
+On Linux:./build_linux.sh  
 Build output directory: build/out/spf/
 
 # Usage Examples
