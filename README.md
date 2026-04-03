@@ -84,7 +84,7 @@ clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER
 | nc_server.spf | NC server |
 
 # Runtime Description
-| 名称 | 说明 |
+| Name | Description |
 | --- | --- |
 | bare-cmd | Run BARE files |
 | bare-interactive | Run BARE files in interactive mode |
