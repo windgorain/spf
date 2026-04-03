@@ -99,5 +99,5 @@ clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER
 | mini | 非常小的bare runtime示例 |
 | uboot | 在uboot中嵌入运行时 |
 | ovs | 在ovs中嵌入运行时 |
-| KCL | Linux内核运行时 |
+| KLC | Linux内核运行时 |
 

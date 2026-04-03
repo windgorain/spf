@@ -92,5 +92,5 @@ clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER
 | mini | Minimal lightweight BARE runtime example |
 | uboot | Embedded runtime for U-Boot |
 | ovs |	Embedded runtime for OVS |
-| KCL | Linux kernel SPF runtime |
+| KLC | Linux kernel SPF runtime |
 
