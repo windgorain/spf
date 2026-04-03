@@ -1,26 +1,26 @@
-# 功能
-非常精简的BARE格式文件运行时
+# Features
+A very compact runtime for BARE format files.
 
-# 编译
-这里有两个build_xxx.sh文件，分别是不同环境下的编译脚本  
+# Compilation
+There are two build_xxx.sh scripts, each for building in different environments.
+On macOS:
+./build_macos.sh
 
-在MACOS机器上  
-./build_macos.sh  
+On Linux:
+./build_linux.sh
 
-在Linux机器上  
-./build_linux.sh  
+Build output directory:
+build/out/
 
-编译结果在: build/out/
-
-# 使用示例
+# Usage Examples
 ```
-# ./build_mac.sh 或者 ./build_linux.sh
-# 以linux上执行为例
+# ./build_mac.sh or ./build_linux.sh
+# Take Linux as an example
 ./build_linux.sh
 
 cd build/out
 
-# 运行bare文件
+# Run bare file
 ./mini ../../../../spf/example/target/hello_world.bare
 
 ```
