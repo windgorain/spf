@@ -1,55 +1,56 @@
-# 准备代码
-1. 下载uboot对应版本代码:
+# Prepare Code
+Download the corresponding version of U-Boot source code:
 ```
 wget https://ftp.denx.de/pub/u-boot/u-boot-2022.10.tar.bz2
 tar xjf u-boot-2022.10.tar.bz2
 ```
 
-2. 将```u-boot-2022.10```中的几个文件拷贝到下载的代码对应位置
+Copy several files from spf/runtime/uboot/u-boot-2022.10 to the corresponding location in the downloaded source code:
 ```
-cp -r mybpf/runtime/uboot/u-boot-2022.10/* ./u-boot-2022.10/
+cp -r your_spf_path/runtime/uboot/u-boot-2022.10/* ./u-boot-2022.10/
 ```
 
-# 下载编译器  
+# Download Compiler
 
-到 ```https://developer.arm.com/downloads/-/gnu-a```网站下载arm64编译器，比如下载```gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz```  
-将编译器解压，此处我们解压到了```~/cc/```目录  
+Download the ARM64 compiler from https://developer.arm.com/downloads/-/gnu-a.For example: gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+Extract the compiler to the ~/cc/ directory (we use /cc/ here):
 ```
 sudo mkdir /cc/
 sudo tar xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz -C /cc/
 ```
 
-# 编译
+# Compile
 ```
 export PATH=/cc/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin:$PATH
 make qemu_arm64_defconfig
 make -j CROSS_COMPILE=aarch64-none-linux-gnu-
 ```
 
-# tftp
-在本地开启tftp服务，准备下载BAREE文件和SPF文件到uboot
+# TFTP
+Start a TFTP server locally to download BARE and SPF files to U-Boot.
 
-# 运行uboot
+# Run U-Boot
 ```
 qemu-system-aarch64 -m 512 -machine virt -cpu cortex-a53 -smp 1 -bios u-boot.bin -nographic
 ```
-# 加载SPF runtime和 SPF APP
-在uboot命令行下执行：  
+
+# Load SPF Runtime and SPF APP
+Execute the following commands in the U-Boot command line:
 ```
-#设置tftp服务器的地址
+# Set TFTP server IP address
 setenv serverip 192.168.64.8   #192.168.64.8是tftp服务的IP地址，需要根据情况修改自己tftp服务的iP
 
-#加载bare文件
+# Load bare file
 tftp 0x40200000 spf_loader.arm64.bare
 load_loader 0x40200000
 
-#加载spf实例
+# Load spf instance
 tftp 0x40200000 fibonacci.spf
 load_spf test1 0x40200000
 
-#运行spf实例
+# Run spf instance
 test_spf 100000
 
-#卸载spf实例
+# Unload spf instance
 unload_spf test1
 ```
