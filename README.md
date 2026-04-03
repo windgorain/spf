@@ -8,14 +8,14 @@ SPF (Simple BPF Format) is a lightweight BPF runtime that can run in various env
 5. Space-saving: BARE and SPF format files are extremely small with low memory footprint.
 
 # Architecture
- SPF consists of two main components: a compiler toolchain and a runtime.
- The compiler toolchain compiles BPF files into SPF/BARE files,while the runtime is responsible for executing SPF/BARE files.
+SPF consists of two main components: a compiler toolchain and a runtime.  
+The compiler toolchain compiles BPF files into SPF/BARE files,while the runtime is responsible for executing SPF/BARE files.
 
 # File Format
- Two target instruction sets are currently supported: ARM64 and X86‑64.
- Two output file formats are supported: SPF format and BARE format.
- The BARE format is relatively simple.It supports BSS global variables (data and rodata are not supported), internal subfunctions, and helper functions.Maps are not supported.
- The SPF format is more complex than BARE (but simpler than ELF).It supports global variables (bss, data, rodata), subfunctions, maps, and helper functions.
+Two target instruction sets are currently supported: ARM64 and X86‑64.  
+Two output file formats are supported: SPF format and BARE format.  
+The BARE format is relatively simple.It supports BSS global variables (data and rodata are not supported), internal subfunctions, and helper functions.Maps are not supported.  
+The SPF format is more complex than BARE (but simpler than ELF).It supports global variables (bss, data, rodata), subfunctions, maps, and helper functions.  
 
 # Compilation
 cd spf
