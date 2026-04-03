@@ -1,70 +1,63 @@
-# 功能
-spf(simple bpf format)是一款轻量的bpf运行时，可以在用户态、嵌入式、内核等多种环境运行。支持多种方式运行bpf：字节码解释执行、jit成本机指令执行、编译为SPF/BARE文件运行。  
+SPF (Simple BPF Format) is a lightweight BPF runtime that can run in various environments such as userspace, embedded systems, and kernel space. It supports multiple ways to execute BPF: interpretation of bytecode, JIT compilation to native instructions, and compilation into SPF/BARE files for execution.
 
-# 特点
-spf的特点  
-  1. 轻量：runtime极度轻量，能以极低的代价到处移植  
-  2. 兼容：兼容多种运行环境，包括嵌入式、内核、用户态、跨OS、跨硬件平台  
-  3. 灵活：APP开发难度低，部署灵活快速，可以快上快下，可以动态加载、卸载APP  
-  4. 高性能：可以编译为本地指令执行  
-  5. 节省空间：BARE和SPF格式文件非常小，占用空间小  
+# Features of SPF
+Lightweight: The runtime is extremely lightweight and can be ported everywhere with very low overhead.
+Compatible: Supports multiple execution environments including embedded systems, kernel space, userspace, cross-OS and cross-hardware platforms.
+Flexible: Low development difficulty for applications, flexible and fast deployment, supporting quick onboarding/offloading as well as dynamic loading and unloading of applications.
+High performance: Supports compilation to native instructions for execution.
+Space-saving: BARE and SPF format files are extremely small with low memory footprint.
 
-# 架构
-spf主要分为两部分： 编译工具 + runtime。  
-编译工具支持将bpf文件编译为SPF/BARE文件  
-runtime负责运行SPF/BARE文件  
+# Architecture
+SPF consists of two main components: a compiler toolchain and a runtime.
+The compiler toolchain compiles BPF files into SPF/BARE files,while the runtime is responsible for executing SPF/BARE files.
 
-# 文件格式
-当前支持两种目标指令集：ARM64和X86-64
-支持输出两种不同的文件格式：SPF格式和BARE格式。  
-BARE格式较简单，支持bss全局变量(不支持data, rodata),  支持内部子函数、支持helper。不支持map。  
-SPF格式比BARE格式复杂(但也比elf要简单)，支持全局变量(bss、data、rodata)、子函数、map、helper。  
+# File Format
+Two target instruction sets are currently supported: ARM64 and X86‑64.
+Two output file formats are supported: SPF format and BARE format.
+The BARE format is relatively simple.It supports BSS global variables (data and rodata are not supported), internal subfunctions, and helper functions.Maps are not supported.
+The SPF format is more complex than BARE (but simpler than ELF).It supports global variables (bss, data, rodata), subfunctions, maps, and helper functions.
 
-# 编译
-cd spf  
-这里有两个build_xxx.sh文件，分别是不同环境下的编译脚本  
+# Compilation
+cd spf
+There are two build_xxx.sh scripts, each for compilation in different environments.
 
-在MACOS机器上  
-./build_macos.sh  
+On macOS:./build_macos.sh
+On Linux:./build_linux.sh
+Build output directory: build/out/spf/
 
-在Linux机器上  
-./build_linux.sh  
-
-编译结果在: build/out/spf/  
-
-# 使用示例
+# Usage Examples
 ```
 cd spf
 
-# ./build_mac.sh 或者 ./build_linux.sh
-# 本例以linux上执行为例
+# ./build_mac.sh or ./build_linux.sh
+# Take Linux as an example
 ./build_linux.sh
 
 cd build/out/spf
 cp -r ../../../loader/* ./
 
-# 运行o文件
+# Run the .o file
 ./spfcmd ../../../example/target/hello_world.o
 
-# 运行lua.spf
+# Run lua.spf
 ./spfcmd app/lua5.1.spf -e "print('hello world')"
 ./spfcmd app/lua5.3.spf -e "print('hello world')"
 ./spfcmd app/lua5.4.spf -e "print('hello world')"
 
-# 转换为spf文件
+# Convert to SPF file
 ./spfbuilder convert ../../../example/target/hello_world.o -o hello_world.spf -j
-# 运行spf文件
+# Run SPF file
 ./spfcmd hello_world.spf
 
-# 转换为bare文件
+# Convert to BARE file
 ./barebuilder convert ../../../example/target/hello_world.o -o hello_world.bare
-# 运行bare文件
+# Run BARE file
 ./bare-cmd hello_world.bare
 ```
 
-# 编写APP 示例
-到 example 目录
-创建 hello_world.c, 输入以下内容:  
+# Write an APP Example
+Go to the example directory.
+Create hello_world.c and enter the following content:
 ```
 #include "utl/ulc_user.h"
 
@@ -76,28 +69,28 @@ int main()
 }
 ```
 
-编译成bpf字节码文件:  
+Compile to BPF bytecode file:
 ```
 clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER  
 ```
 
-# APP说明
-| 名称 | 说明 |
+# APP Description
+| Name | Description |
 | --- | --- |
-| lua5.1.spf | 将lua5.1编译成了spf格式文件. 不支持浮点数运算 |
-| lua5.3.spf | 将lua5.3编译成了spf格式文件. 不支持浮点数运算 |
-| lua5.4.spf | 将lua5.4编译成了spf格式文件. 不支持浮点数运算 |
-| loader_cmd.spf | 交互式spf运行时 |
-| nc_server.spf | nc服务器 |
+| lua5.1.spf | Lua 5.1 compiled into SPF format. Floating-point operations are not supported. |
+| lua5.3.spf | Lua 5.3 compiled into SPF format. Floating-point operations are not supported. |
+| lua5.4.spf | Lua 5.4 compiled into SPF format. Floating-point operations are not supported. |
+| loader_cmd.spf | Interactive SPF runtime |
+| nc_server.spf | NC server |
 
-# runtime说明
+# Runtime Description
 | 名称 | 说明 |
 | --- | --- |
-| bare-cmd | 运行BARE文件 |
-| bare-interactive | 以交互模式运行BARE文件 |
-| spfcmd | 运行SPF文件的runtime |
-| mini | 非常小的bare runtime示例 |
-| uboot | 在uboot中嵌入运行时 |
-| ovs | 在ovs中嵌入运行时 |
-| KCL | Linux内核运行时 |
+| bare-cmd | Run BARE files |
+| bare-interactive | Run BARE files in interactive mode |
+| spfcmd | Runtime for executing SPF files |
+| mini | Minimal lightweight BARE runtime example |
+| uboot | Embedded runtime for U-Boot |
+| ovs |	Embedded runtime for OVS |
+| KCL | Linux kernel SPF runtime |
 
