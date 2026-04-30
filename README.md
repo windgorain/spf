@@ -1,4 +1,4 @@
-SPF (Simple BPF Format) is a lightweight BPF runtime that can run in various environments such as userspace, embedded systems, and kernel space. It supports multiple ways to execute BPF: interpretation of bytecode, JIT compilation to native instructions, and compilation into SPF/BARE files for execution.
+SPF (Simple Performance Format) is a lightweight runtime that can run in various environments such as userspace, embedded systems, and kernel space. It supports multiple ways to execute SPF file: interpretation of bytecode, JIT compilation to native instructions, and compilation into SPF/BARE files for execution.
 
 # Features of SPF
 1. Lightweight: The runtime is extremely lightweight and can be ported everywhere with very low overhead.
@@ -9,7 +9,7 @@ SPF (Simple BPF Format) is a lightweight BPF runtime that can run in various env
 
 # Architecture
 SPF consists of two main components: a compiler toolchain and a runtime.  
-The compiler toolchain compiles BPF files into SPF/BARE files,while the runtime is responsible for executing SPF/BARE files.
+The compiler toolchain compiles files into SPF/BARE format,while the runtime is responsible for executing SPF/BARE files.
 
 # File Format
 Two target instruction sets are currently supported: ARM64 and X86‑64.  

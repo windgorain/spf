@@ -1,5 +1,5 @@
 # 功能
-spf(simple bpf format)是一款轻量的bpf运行时，可以在用户态、嵌入式、内核等多种环境运行。支持多种方式运行bpf：字节码解释执行、jit成本机指令执行、编译为SPF/BARE文件运行。  
+spf(simple performance format)是一款轻量的运行时，可以在用户态、嵌入式、内核等多种环境运行。支持多种方式运行SPF文件：字节码解释执行、jit成本机指令执行、编译为SPF/BARE文件运行。  
 
 # 特点
 spf的特点  
@@ -11,7 +11,7 @@ spf的特点
 
 # 架构
 spf主要分为两部分： 编译工具 + runtime。  
-编译工具支持将bpf文件编译为SPF/BARE文件  
+编译工具支持编译SPF/BARE文件  
 runtime负责运行SPF/BARE文件  
 
 # 文件格式
@@ -76,7 +76,7 @@ int main()
 }
 ```
 
-编译成bpf字节码文件:  
+编译成字节码文件:  
 ```
 clang -O2 -I ../h -target bpf -c hello_world.c  -D IN_ULC_USER  
 ```
